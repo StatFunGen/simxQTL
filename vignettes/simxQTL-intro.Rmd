@@ -1,0 +1,25 @@
+---
+title: "Introduction to simxQTL"
+author: "Xuewei Cao"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{intro-to-fasterscale}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Here we demonstrate the use of the `simxQTL` package to simulate
+xQTL associations.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE,results = "hold",comment = "#")
+```
+					 
+## Set up your environment
+
+Load the `simxQTL` package.
+
+```{r load-pkgs}
+library(simxQTL)
+```
