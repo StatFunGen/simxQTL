@@ -163,3 +163,78 @@ simulate_trans_expression_ACC_FDR <- function(E_cis, A_cis_trans, A_trans, phi_g
   return(E_trans)
 }
 
+#' Simulate trans gene expression for a mixture of cell types
+#'
+#' This function simulates trans gene expression considering different cell types,
+#' each with its own gene-gene regulatory network.
+#'
+#' @param E_cis Matrix of cis gene expressions with dimensions n x m.
+#' @param phi_gene Per-gene heritability.
+#' @param A_cell_1 List containing adjacency matrices for cell-type 1 (A_cis_trans and A_trans).
+#' @param A_cell_2 Optionally, a similar list for cell-type 2.
+#' @param omega Optionally, a weight for combining cell types. If NULL, drawn from U(0.2, 0.8).
+#' @return A list containing matrices E_trans, E_trans_cell_1, and E_trans_cell_2.
+#' @examples
+#' n <- 1000
+#' m <- 8
+#' g <- 9
+#' phi_gene <- 0.20
+#' E_cis <- matrix(rnorm(n * m), n, m)
+#' A_cell_1 <- list(A_cis_trans = matrix(sample(0:1, m * g, replace = TRUE), nrow = m),
+#'                 A_trans = matrix(sample(0:1, g * g, replace = TRUE), nrow = g))
+#' result <- simulate_trans_mixture_celltype(E_cis, phi_gene, A_cell_1)
+#' @export
+simulate_trans_mixture_celltype <- function(E_cis, phi_gene, A_cell_1, A_cell_2 = NULL, omega = NULL, p = c(1/4, 1/4)) {
+  # ... [Function to simulate trans expression, e.g., simulate_trans_expression_ACC_FDR]
+
+  if (is.null(A_cell_2)) {
+    # Generate random A for cell type 2 if A_cell_2 is not provided
+    A_cell_2 <- get_random_A(A_cell_1, p)
+  }
+
+  # Simulate for cell type 1 and 2
+  E_trans_cell_1 <- simulate_trans_expression_ACC_FDR(E_cis, A_cell_1$A_cis_trans, A_cell_1$A_trans, phi_gene)
+  E_trans_cell_2 <- simulate_trans_expression_ACC_FDR(E_cis, A_cell_2$A_cis_trans, A_cell_2$A_trans, phi_gene)
+
+  # Determine omega if not provided
+  if (is.null(omega)) {
+    omega <- runif(1, 0.2, 0.8)
+  }
+
+  # Weighted sum
+  E_trans <- omega * E_trans_cell_1 + (1 - omega) * E_trans_cell_2
+
+  return(list(E_trans = E_trans, E_trans_cell_1 = E_trans_cell_1, E_trans_cell_2 = E_trans_cell_2))
+}
+
+
+#' Generate random adjacency matrices for trans gene associations
+#'
+#' This function creates random adjacency matrices for cis-trans and trans-trans effects
+#' based on specified probabilities, as illustrated in Figure 7(B) and (C).
+#'
+#' @param A_cell_1 List containing fixed adjacency matrices for cell-type 1 (A_cis_trans and A_trans).
+#' @param p Vector of probabilities for the associations.
+#' @return A list containing random adjacency matrices for cell-type 2 (A_cis_trans and A_trans).
+#'
+#' @examples
+#' A_cell_1 <- list(A_cis_trans = matrix(1, nrow = 8, ncol = 9),
+#'                  A_trans = matrix(0, nrow = 9, ncol = 9))
+#' p <- c(1/4, 1/2, 1/2) # Example probabilities
+#' A_cell_2 <- get_random_A(A_cell_1, p)
+#' @export
+get_random_A <- function(A_cell_1, p) {
+    m <- nrow(A_cell_1$A_cis_trans)
+    g <- ncol(A_cell_1$A_cis_trans)
+    
+    # Assuming the first probability is for A_cis_trans and the second for A_trans
+    A_cis_trans_random <- matrix(rbinom(m * g, size = 1, prob = p[1]), nrow = m)
+    
+    # For A_trans, considering a multi-layered approach as per Figure 7(C)
+    A_trans_random <-matrix(rbinom(g * g, size = 1, prob = p[2]), nrow = g)
+    
+    # Ensure A_trans_random values are within 0 and 1 after layering probabilities
+    A_trans_random[A_trans_random > 1] <- 1
+    
+    return(list(A_cis_trans = A_cis_trans_random, A_trans = A_trans_random))
+}
