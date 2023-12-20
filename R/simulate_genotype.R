@@ -43,7 +43,7 @@ sim_geno_indep <- function(n, p, min_maf = 0.01, max_maf = 0.4, scale = FALSE) {
 #' @examples
 #' sim_geno_LD(n = 100, LD = matrix(runif(100), 10, 10), min_maf = 0.01, max_maf = 0.4, lambda = 1e-3, type = "continuous", scale = TRUE)
 #' @export
-sim_geno_LD <- function(n, LD, min_maf = 0.01, max_maf = 0.4, lambda = 1e-3, type = "continuous", scale = FALSE) {
+sim_geno_LD <- function(n, LD, min_maf = 0.01, max_maf = 0.4, lambda = 1e-3, is.discrete = FALSE, scale = FALSE) {
   if (missing(n)) stop("Please provide the sample size")
   if (is.null(LD)) stop("Please provide LD matrix!")
 
@@ -55,7 +55,7 @@ sim_geno_LD <- function(n, LD, min_maf = 0.01, max_maf = 0.4, lambda = 1e-3, typ
   maf <- runif(p, min = min_maf, max = max_maf)
 
   G <- safe_rmvnorm(n, p, LD, maf, lambda)
-  if (type == "discrete") {
+  if (is.discrete) {
       G <- binomialize_genotype(G, p, maf)
   }
 
