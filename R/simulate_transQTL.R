@@ -41,6 +41,10 @@ simulate_cis_expression <- function(G, A, phi_v) {
     # Corrected calculation of variance_sum and sigma2_cis
     variance_sum <- var(G[, connected_snps, drop = FALSE] %*% beta[connected_snps])
     sigma2_cis <- var(G[, connected_snps[1]] * beta[connected_snps[1]]) / phi_v - variance_sum
+    while (sigma2_cis <= 0) {
+      phi_v <- phi_v - 0.01
+      sigma2_cis <- var(E_comb[, affecting_genes[1]] * beta[affecting_genes[1]]) / phi_gene - variance_sum
+    }
 
     # Simulate gene expression
     E_tmp <- G %*% beta + rnorm(n, mean = 0, sd = sqrt(sigma2_cis))
@@ -92,6 +96,10 @@ simulate_trans_expression_t1e <- function(A, phi_gene, n) {
       # Calculate sigma^2_trans
       variance_sum <- var(E[, affecting_genes, drop = FALSE] %*% beta[affecting_genes])
       sigma2_trans <- var(E[, affecting_genes[1]] * beta[affecting_genes[1]]) / phi_gene - variance_sum
+      while (sigma2_trans <= 0) {
+        phi_gene <- phi_gene - 0.01
+        sigma2_trans <- var(E_comb[, affecting_genes[1]] * beta[affecting_genes[1]]) / phi_gene - variance_sum
+      }
 
       # Multi-regression model for gene expression
       E_tmp <- E %*% beta + rnorm(n, mean = 0, sd = sqrt(sigma2_trans))
@@ -151,6 +159,10 @@ simulate_trans_expression_ACC_FDR <- function(E_cis, A_cis_trans, A_trans, phi_g
       # Calculate sigma^2
       variance_sum <- var(E_comb[, affecting_genes, drop = FALSE] %*% beta[affecting_genes])
       sigma2_gene <- var(E_comb[, affecting_genes[1]] * beta[affecting_genes[1]]) / phi_gene - variance_sum
+      while (sigma2_gene <= 0) {
+        phi_gene <- phi_gene - 0.01
+        sigma2_gene <- var(E_comb[, affecting_genes[1]] * beta[affecting_genes[1]]) / phi_gene - variance_sum
+      }
 
       # Multi-regression model for gene expression
       E_tmp <- E_comb %*% beta + rnorm(n, mean = 0, sd = sqrt(sigma2_gene))
@@ -223,15 +235,18 @@ simulate_trans_mixture_celltype <- function(E_cis, phi_gene, A_cell_1, A_cell_2 
 #' p <- c(1/4, 1/2, 1/2) # Example probabilities
 #' A_cell_2 <- get_random_A(A_cell_1, p)
 #' @export
-get_random_A <- function(A_cell_1, p = c(1/4, 1/4)) {
+get_random_A <- function(A_cell_1, p = c(1/3, 2/3)) {
     m <- nrow(A_cell_1$A_cis_trans)
     g <- ncol(A_cell_1$A_cis_trans)
     
     # Assuming the first probability is for A_cis_trans and the second for A_trans
-    A_cis_trans_random <- matrix(rbinom(m * g, size = 1, prob = p[1]), nrow = m)
+    A_cis_trans_random <- matrix(0, nrow = m, ncol = g)
+    A_cis_trans_random[,1:4] <- matrix(rbinom(m * 4, size = 1, prob = p[1]), nrow = m)
     
     # For A_trans, considering a multi-layered approach as per Figure 7(C)
-    A_trans_random <-matrix(rbinom(g * g, size = 1, prob = p[2]), nrow = g)
+    A_trans_random <-matrix(0, nrow = g, ncol = g)
+    A_trans_random[1:4,5:7] <- matrix(rbinom(4*3, size = 1, prob = p[2]), nrow = 4)
+    A_trans_random[5:7,8:9] <- matrix(rbinom(3*2, size = 1, prob = p[2]), nrow = 3)
     
     # Ensure A_trans_random values are within 0 and 1 after layering probabilities
     A_trans_random[A_trans_random > 1] <- 1
