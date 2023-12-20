@@ -196,7 +196,9 @@ simulate_trans_expression_ACC_FDR <- function(E_cis, A_cis_trans, A_trans, phi_g
 #'                 A_trans = matrix(sample(0:1, g * g, replace = TRUE), nrow = g))
 #' result <- simulate_trans_mixture_celltype(E_cis, phi_gene, A_cell_1)
 #' @export
-simulate_trans_mixture_celltype <- function(E_cis, phi_gene, A_cell_1, A_cell_2 = NULL, omega = NULL, p = c(1/4, 1/4)) {
+simulate_trans_mixture_celltype <- function(E_cis, phi_gene, A_cell_1, 
+                                            A_cell_2 = NULL, omega = NULL, 
+                                            p = c(1/3, 2/3)) {
   # ... [Function to simulate trans expression, e.g., simulate_trans_expression_ACC_FDR]
 
   if (is.null(A_cell_2)) {
