@@ -100,7 +100,7 @@ simulation_trans_expression_t1e <- function(A, phi_gene, n) {
   return(E)
   
 
-  #' Simulate trans gene expression for accuracy and false discovery rate simulations
+#' Simulate trans gene expression for accuracy and false discovery rate simulations
 #'
 #' This function simulates trans gene expression based on cis and trans gene expression data and adjacency matrices.
 #' It creates a combined expression matrix and adjacency matrix for simulation.
