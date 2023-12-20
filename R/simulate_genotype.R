@@ -1,7 +1,7 @@
 
 # sim_geno_functions.R
 
-library(yourPackageName) # Replace with the name of your package
+library(simxQTL) # Replace with the name of your package
 
 #' Simulate Independent Genotypes
 #'
