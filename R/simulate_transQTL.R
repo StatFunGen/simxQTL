@@ -130,12 +130,10 @@ simulation_trans_expression_ACC_FDR <- function(E_cis, A_cis_trans, A_trans, phi
   E_trans <- matrix(0, n, g)  # Initialize E_trans with zeros
   E_comb <- cbind(E_cis, E_trans)  # Combine E_cis and E_trans
 
-  # Create the block diagonal matrix A_comb
-  A_comb_upper <- cbind(A_cis_trans, matrix(0, nrow = m, ncol = g))
-  A_comb_lower <- cbind(matrix(0, nrow = g, ncol = m), A_trans)
-  A_comb <- rbind(A_comb_upper, A_comb_lower)
+  # Create combined adjacency matrix A_comb
+  A_comb <- rbind(A_cis_trans, A_trans)
 
-  for (j in 1:(m + g)) {
+  for (j in 1:g) {
     affecting_genes <- which(A_comb[, j] == 1)
     beta <- rep(0, m + g)  # Initialize beta to zero
 
@@ -161,3 +159,4 @@ simulation_trans_expression_ACC_FDR <- function(E_cis, A_cis_trans, A_trans, phi
   E_trans <- E_comb[, (m + 1):(m + g)]
   return(E_trans)
 }
+
