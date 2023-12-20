@@ -1,8 +1,6 @@
 
 # sim_geno_functions.R
 
-library(simxQTL) # Replace with the name of your package
-
 #' Simulate Independent Genotypes
 #'
 #' @param n Sample size.
