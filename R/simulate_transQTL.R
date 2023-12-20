@@ -20,7 +20,7 @@
 #' E <- simulation_cis_expression(G, A, phi_v)
 #'
 #' @export
-simulation_cis_expression <- function(G, A, phi_v) {
+simulate_cis_expression <- function(G, A, phi_v) {
   n <- nrow(G)
   m <- ncol(A)
   E <- matrix(NA, n, m)
@@ -72,7 +72,7 @@ simulation_cis_expression <- function(G, A, phi_v) {
 #' E <- simulation_trans_expression_t1e(A, phi_gene, n)
 #'
 #' @export
-simulation_trans_expression_t1e <- function(A, phi_gene, n) {
+simulate_trans_expression_t1e <- function(A, phi_gene, n) {
   g <- ncol(A)
   E <- matrix(rnorm(n * g), n, g)  # Initialize E with standard normal distribution
 
@@ -125,7 +125,7 @@ simulation_trans_expression_t1e <- function(A, phi_gene, n) {
 #' E_trans <- simulation_trans_expression_ACC_FDR(E_cis, A_cis_trans, A_trans, phi_gene)
 #'
 #' @export
-simulation_trans_expression_ACC_FDR <- function(E_cis, A_cis_trans, A_trans, phi_gene) {
+simulate_trans_expression_ACC_FDR <- function(E_cis, A_cis_trans, A_trans, phi_gene) {
   n <- nrow(E_cis)
   m <- ncol(E_cis)
   g <- ncol(A_trans)
