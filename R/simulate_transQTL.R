@@ -223,7 +223,7 @@ simulate_trans_mixture_celltype <- function(E_cis, phi_gene, A_cell_1, A_cell_2 
 #' p <- c(1/4, 1/2, 1/2) # Example probabilities
 #' A_cell_2 <- get_random_A(A_cell_1, p)
 #' @export
-get_random_A <- function(A_cell_1, p) {
+get_random_A <- function(A_cell_1, p = c(1/4, 1/4)) {
     m <- nrow(A_cell_1$A_cis_trans)
     g <- ncol(A_cell_1$A_cis_trans)
     
