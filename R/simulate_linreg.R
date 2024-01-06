@@ -99,7 +99,7 @@ compute_s2g <- function(RL, beta) {
 #' @param G Genotype matrix
 #' @param ncausal Output from function parse_num_causal_snps, how many variants have non-negative effects (being causal)
 #' @param ntrait Number of simulated phenotypes (traits)
-#' @param shared_pattern: indicator of whether or not all the variant of non-negative effects are shared in all traits (being a shared causal varaint)
+#' @param shared_pattern: if is "all", all traits will have the same causal variant(s) with non-zero effect. if is "random", all traits will have independent (random) causal variant(s)
 #' @return Vector of causal effects.
 #' @importFrom stats rnorm
 #' @export
@@ -138,7 +138,7 @@ sim_beta = function(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern 
       }
     }
     
-  }else{
+  }else if(shared_pattern == "random"){
     if(is_h2g_total){
       for(i in 1:ntrait){
         causal_index = sample(seq_len(n_snps), n_causal)
@@ -160,8 +160,48 @@ sim_beta = function(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern 
     }    
     
     
+  }else{
+    stop('Shared pattern must be "all" or "random"!')
   }
   return(B)
+}
+
+#' Simulate a Polygenic Trait
+#'
+#' Simulate a complex trait as a function of latent genetic values and environmental noise.
+#'
+#' @param g Vector of latent genetic values.
+#' @param h2g Heritability of the trait in the population.
+#' @return Simulated phenotype.
+#' @importFrom stats rnorm
+#' @export
+#'
+#' @examples
+#' R <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)  # LD matrix
+#' n <- 100                                  # Number of genotypes to sample
+#' RL <- get_lower_chol(R)                              # Compute lower Cholesky decomposition
+#' G <- sim_geno(RL, n)                       # Simulate genotypes
+#' ncausal <- list(value = 50, is_pct = TRUE)  # 50% of observed SNPs
+#' eqtl_h2 <- 0.5                              # Heritability of gene expression
+#' b <- sim_beta(RL, ncausal, eqtl_h2) 
+#' g <- G %*% b                   # latent genetic values
+#' y <- simulate_polygenic_trait(g, eqtl_h2)  # Simulate the complex trait
+simulate_polygenic_trait <- function(g, h2g) {
+  n <- length(g)
+  
+  if (h2g > 0) {
+    s2g <- var(g)  # Genetic variance
+    s2e <- s2g * ((1 / h2g) - 1)  # Environmental variance
+    e <- rnorm(n, mean = 0, sd = sqrt(s2e))
+    y <- g + e
+  } else {
+    y <- rnorm(n, mean = 0, sd = 1)
+  }
+  
+  # Standardize the phenotype
+  y <- scale(y, center = TRUE, scale = FALSE)
+  
+  return(y)
 }
 
 #' Simulate GWAS Summary Statistics
@@ -213,10 +253,10 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 # The following is modified using chatgpt4 from
 # https://github.com/xueweic/fine-mcoloc/blob/b7aa9d27b0be13044224a4b2207717e74611d449/dsc/phenotype_simulation.r
 
-#' Simulate Multiple Traits from Genotype
+#' Simulate Multiple Traits from Genotype and Effect Sizes
 #'
-#' This function simulates multiple traits (phenotypes) based on genotype data, the rows of output will represent each trait, and the columns are each subjects' phenotype (trait)
-#' and heritability. It allows specifying if the heritability
+#' This function simulates multiple traits (phenotypes) based on genotype data, 
+#' a matrix of effect sizes, and heritability. It allows specifying if the heritability
 #' is total or per-SNP, optionally scales the phenotypes, and can handle residual correlations.
 #' per eQTL heritability is 0.05 to 0.07 according to https://www.nature.com/articles/ng.3506
 #'
@@ -225,8 +265,7 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 #' @param h2g Heritability (proportion of variance explained by genetics).
 #' @param is_h2g_total Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).
 #' @param residual_corr Matrix of residual correlations (NULL for independent samples).
-#' @param scale_Y Logical indicating if the phenotypes should be scaled (default is FALSE).
-#' @return A list containing the simulated phenotypes (`Y`) and residual variance (`residual_var`).
+#' @return A list containing the simulated phenotypes matrix (t * n, t = trait number, n = sample size) (`P`) and residual variance (`residual_var`).
 #' @importFrom MASS mvrnorm
 #' @export
 #'
@@ -235,19 +274,29 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 #' # Simulating effect sizes for two traits
 #' B = sim_beta(G, ncausal = 5, ntrait = 3, is_h2g_total = F, shared_pattern = "all")
 #' P = sim_multi_traits(G, B, h2g = 0.1, is_h2g_total = T, max_h2g = 1)
-sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1){
+sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residual_corr = NULL){
+  if (!is_h2g_total) {
+        h2g <- min(h2g * nrow(B), max_h2g)
+    }
   P = matrix(0, nrow = ncol(B), ncol = nrow(G)) # row: traits, column: different subjects
   mu = G %*% B 
+  sigma = numeric(length = ncol(B))
   for(i in 1:ncol(mu)){
   if(is_h2g_total){
-    sigma2 = var(mu[,i]) * (1-h2g) / h2g
-    P[i,] = apply(as.matrix(mu[,i]), 1, function(mu0) {return(rnorm(1, mu0, sqrt(sigma2)))})
+    sigma[i] = sqrt(var(mu[,i]) * (1-h2g) / h2g)
   }else{
     first_index = min(which(B[,i]!=0))
-    sigma2 =  var(G[,first_index])/h2g - var(mu[,i])
-    P[i,] = apply(as.matrix(mu[,i]), 1, function(mu0) {return(rnorm(1, mu0, sqrt(sigma2)))})
-      
+    if(var(G[,first_index])/h2g - var(mu[,i]) >=0){
+    sigma[i] =  sqrt(var(G[,first_index])/h2g - var(mu[,i]))
+    }else{
+      stop("Per SNP heritability too large, residual variance will be less than 0.")
+    }
     }
   }
-  return(P)
+  if(is.null(residual_corr)){
+    residual_corr <- diag(length(sigma))
+  } 
+  residual_var <- sweep(sweep(residual_corr, 2, sigma, "*"), 1, sigma, "*")
+  P = mu + mvrnorm(n = nrow(G), mu = rep(0, ncol(residual_var)), Sigma = residual_var)
+  return(P = t(P), residual_var = residual_var)
 }
