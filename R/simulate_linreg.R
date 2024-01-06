@@ -9,7 +9,8 @@
 #' @return A list containing the parsed number of causal SNPs and the type (percent or count).
 #'
 #' @examples
-#' parse_num_causal_snps("10")       # 10 SNPs
+#' parse_num_causal_snps(10)       # 10 SNPs
+#' parse_num_causal_snps(“10”)     # can also acept string format
 #' parse_num_causal_snps("50pct")    # 50% of observed SNPs
 #' parse_num_causal_snps("5avg")     # Average of 5 SNPs, sampled from truncated Poisson distribution
 #' parse_num_causal_snps("0avg")     # Invalid: Average number of causal SNPs must be at least 1
@@ -18,8 +19,8 @@
 #' @export 
 parse_num_causal_snps <- function(value) {
   is_pct <- FALSE
-  if (grepl("^[0-9]+(pct|avg)?$", value, ignore.case = TRUE)) {
-    num_tmp <- as.numeric(gsub("^[0-9]+", "", value))
+  if (grepl("[^0-9]+(pct|avg)?$", value, ignore.case = TRUE)) {
+    num_tmp <- as.numeric(gsub("[^0-9]+", "", value))
     num_mod <- tolower(gsub("[^a-zA-Z]+", "", value))
 
     if (num_mod %in% c("pct", "avg")) {
@@ -45,43 +46,12 @@ parse_num_causal_snps <- function(value) {
       }
     }
   } else {
-    stop("Invalid number of causal SNPs")
+    num_tmp = as.numeric(gsub("[^0-9]+", "", value))
   }
 
   return(list(value = num_tmp, is_pct = is_pct))
 }
 
-#' Compute LD Matrix
-#'
-#' Computes the LD matrix from genotype data, adjusting for minor allele frequencies,
-#' regularizing to ensure positive semi-definiteness, and standardizing to a correlation matrix.
-#'
-#' @param G Genotype matrix.
-#' @param ld_ridge Ridge regularization parameter for LD matrix.
-#' @return LD matrix.
-#' @importFrom stats sd
-#' @export
-#'
-#' @examples
-#' # Random genotype matrix as an example
-#' G <- matrix(rbinom(1000, 2, 0.5), nrow = 100, ncol = 10)
-#' ld_ridge <- 0.1
-#' LD <- get_ld(G, ld_ridge)
-get_ld <- function(G, ld_ridge=0.1) {
-  n <- nrow(G)
-  p <- ncol(G)
-
-  # Adjusting for minor allele frequencies
-  mafs <- colMeans(G) / 2
-  G <- sweep(G, 2, mafs * 2, FUN = "-")
-  G <- sweep(G, 2, apply(G, 2, sd), FUN = "/")
-
-  # Regularize LD matrix and adjust to correlation matrix
-  LD <- crossprod(G) / n + diag(ld_ridge, p)
-  LD <- LD / (1 + ld_ridge)
-
-  return(LD)
-}
 
 #' Compute Lower Cholesky Decomposition
 #'
@@ -126,68 +96,74 @@ compute_s2g <- function(RL, beta) {
 #'
 #' Sample QTL effects under a specified architecture.
 #'
-#' @param RL Lower Cholesky factor of the p x p LD matrix for the population.
-#' @param ncausal Object of class NumCausalSNPs containing the number of causal SNPs to select.
-#' @param eqtl_h2 The heritability of gene expression.
-#' @param rescale Logical indicating whether to rescale effects such that var(b V b) = h2 (default is TRUE).
+#' @param G Genotype matrix
+#' @param ncausal Output from function parse_num_causal_snps, how many variants have non-negative effects (being causal)
+#' @param ntrait Number of simulated phenotypes (traits)
+#' @param shared_pattern: if is "all", all traits will have the same causal variant(s) with non-zero effect. if is "random", all traits will have independent (random) causal variant(s)
 #' @return Vector of causal effects.
 #' @importFrom stats rnorm
 #' @export
 #'
 #' @examples
-#' # Create a correlation matrix as R
-#' R <- matrix(c(1, 0.5, 0.5, 1), nrow = 2, ncol = 2)
-#' ncausal <- list(value = 50, is_pct = TRUE)  # 50% of observed SNPs
-#' eqtl_h2 <- 0.5                              # Heritability of gene expression
-#' RL <- get_lower_chol(R)                         # Compute lower Cholesky decomposition
-#' sim_beta(RL, ncausal, eqtl_h2)               # Simulate QTL effects
-sim_beta <- function(RL, ncausal, eqtl_h2, rescale = TRUE) {
-  n_snps <- nrow(RL)
-  
-  n_qtls <- if (ncausal$is_pct) {
+#' # Create a genotype matrix
+#' G = matrix(rbinom(1000, 2, 0.5), nrow = 1000, ncol = 50) 
+#' B = sim_beta(G, ncausal = 5, ntrait = 3, is_h2g_total = T, shared_pattern = "all")
+#' B = sim_beta(G, ncausal = 1, ntrait = 5, is_h2g_total = F, shared_pattern = "random")
+sim_beta = function(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern = "all"){
+  n_snps = ncol(G)
+  ncausal = parse_num_causal_snps(ncausal)
+  n_causal = if(ncausal$is_pct){
     max(1, round(ncausal$value * n_snps))
-  } else {
+  }else{
     min(ncausal$value, n_snps)
   }
+  B = matrix(0, nrow =  ncol(G), ncol = ntrait)
   
-  if (eqtl_h2 != 0) {
-    c_qtls <- sample(seq_len(n_snps), n_qtls)
-    b_qtls <- numeric(n_snps)
-    b_qtls[c_qtls] <- rnorm(n_qtls, mean = 0, sd = sqrt(eqtl_h2 / n_qtls))
-    
-    if (rescale) {
-      s2g <- compute_s2g(RL, b_qtls)
-      b_qtls <- b_qtls * sqrt(eqtl_h2 / s2g)
+  if(shared_pattern == "all"){
+    if(is_h2g_total){
+      causal_index = sample(seq_len(n_snps), n_causal)
+      beta = numeric(n_snps)
+      beta[causal_index] = 1
+      for(i in 1:ntrait){
+        B[,i] = beta
+      }
+    }else{
+      causal_index = sample(seq_len(n_snps), n_causal)
+    beta = numeric(n_snps)
+    beta[causal_index[1]] = 1
+    var_vector = apply(as.matrix(G[,causal_index]), 2, var)
+    beta[causal_index] = sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
+    for(i in 1:ntrait){
+        B[,i] = beta
+      }
     }
-  } else {
-    b_qtls <- numeric(n_snps)
+    
+  }else if(shared_pattern == "random"){
+    if(is_h2g_total){
+      for(i in 1:ntrait){
+        causal_index = sample(seq_len(n_snps), n_causal)
+        beta = numeric(n_snps)
+        beta[causal_index] = 1
+
+        B[,i] = beta
+      }
+    }else{
+          for(i in 1:ntrait){
+        causal_index = sample(seq_len(n_snps), n_causal)
+      beta = numeric(n_snps)
+      beta[causal_index[1]] = 1
+      var_vector = apply(as.matrix(G[,causal_index]), 2, var)
+      beta[causal_index] = sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
+
+        B[,i] = beta
+      }
+    }    
+    
+    
+  }else{
+    stop('Shared pattern must be "all" or "random"!')
   }
-  
-  return(b_qtls)
-}
-
-#' Simulate Genotypes
-#'
-#' Sample genotypes from a multivariate normal approximation.
-#'
-#' @param RL Lower Cholesky factor of the p x p LD matrix for the population.
-#' @param n Number of genotypes to sample.
-#' @return Centered and scaled genotype matrix.
-#' @importFrom stats rnorm
-#' @export
-#'
-#' @examples
-#' R <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)  # LD matrix
-#' n <- 100                                  # Number of genotypes to sample
-#' RL <- get_lower_chol(R)                              # Compute lower Cholesky decomposition
-#' G <- sim_geno(RL, n)                       # Simulate genotypes
-sim_geno <- function(RL, n) {
-  p <- nrow(RL)
-
-  G <- RL %*% matrix(rnorm(n * p), ncol = p)
-  G <- scale(G)  # Center and scale
-
-  return(G)
+  return(B)
 }
 
 #' Simulate a Polygenic Trait
@@ -288,49 +264,39 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 #' @param B Matrix of effect sizes for multiple traits.
 #' @param h2g Heritability (proportion of variance explained by genetics).
 #' @param is_h2g_total Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).
-#' @param max_h2g Maximum heritability allowed in the model (default is 0.8).
 #' @param residual_corr Matrix of residual correlations (NULL for independent samples).
-#' @param scale_Y Logical indicating if the phenotypes should be scaled (default is FALSE).
-#' @return A list containing the simulated phenotypes (`Y`) and residual variance (`residual_var`).
+#' @return A list containing the simulated phenotypes matrix (t * n, t = trait number, n = sample size) (`P`) and residual variance (`residual_var`).
 #' @importFrom MASS mvrnorm
 #' @export
 #'
 #' @examples
-#' G <- matrix(rnorm(1000), nrow = 100, ncol = 10) # Random genotype matrix
+#' G = matrix(rbinom(1000, 2, 0.5), nrow = 1000, ncol = 50) 
 #' # Simulating effect sizes for two traits
-#' B <- sapply(1:2, function(i) sim_beta(RL, ncausal, eqtl_h2)) 
-#' h2g <- 0.5                                      # Heritability
-#' result <- sim_multi_traits(G, B, h2g)           # Simulate multiple traits
-sim_multi_traits <- function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 0.8, 
-                             residual_corr = NULL, scale_Y = FALSE) {
-    if('scaled:scale' %in% names(attributes(G))) {
-        SB <- sweep(B, 2, attr(G, "scaled:scale"), FUN = "/")
-        GSB <- G %*% SB
-        Yhat <- sweep(GSB, 2, colMeans(GSB), FUN = "-")
-    } else {
-        Yhat <- G %*% B
+#' B = sim_beta(G, ncausal = 5, ntrait = 3, is_h2g_total = F, shared_pattern = "all")
+#' P = sim_multi_traits(G, B, h2g = 0.1, is_h2g_total = T, max_h2g = 1)
+sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residual_corr = NULL){
+  if (!is_h2g_total) {
+        h2g <- min(h2g * nrow(B), max_h2g)
     }
-
-    genetic_var <- apply(Yhat, 2, var)
-
-    if (!is_h2g_total) {
-        h2g <- min(h2g * ncol(B), max_h2g)
+  P = matrix(0, nrow = ncol(B), ncol = nrow(G)) # row: traits, column: different subjects
+  mu = G %*% B 
+  sigma = numeric(length = ncol(B))
+  for(i in 1:ncol(mu)){
+  if(is_h2g_total){
+    sigma[i] = sqrt(var(mu[,i]) * (1-h2g) / h2g)
+  }else{
+    first_index = min(which(B[,i]!=0))
+    if(var(G[,first_index])/h2g - var(mu[,i]) >=0){
+    sigma[i] =  sqrt(var(G[,first_index])/h2g - var(mu[,i]))
+    }else{
+      stop("Per SNP heritability too large, residual variance will be less than 0.")
     }
-
-    sigma <- sqrt(genetic_var / h2g - genetic_var)
-    if (is.null(residual_corr)) {
-        residual_corr <- diag(nrow(Yhat))
     }
-
-    residual_var <- sweep(sweep(residual_corr, 2, sigma, "*"), 1, sigma, "*")
-    Y <- Yhat + mvrnorm(n = nrow(G), mu = rep(0, ncol(residual_var)), Sigma = residual_var)
-
-    if (scale_Y) {
-        sd_Y <- apply(Y, 2, sd)
-        Y <- sweep(Y, 2, sd_Y, FUN = "/")
-        residual_var <- sweep(sweep(residual_var, 2, sd_Y, "/"), 1, sd_Y, "/")
-        B <- sweep(B, 2, sd_Y, FUN = "/")
-    }
-
-    return(list(Y = Y, residual_var = residual_var))
+  }
+  if(is.null(residual_corr)){
+    residual_corr <- diag(length(sigma))
+  } 
+  residual_var <- sweep(sweep(residual_corr, 2, sigma, "*"), 1, sigma, "*")
+  P = mu + mvrnorm(n = nrow(G), mu = rep(0, ncol(residual_var)), Sigma = residual_var)
+  return(P = t(P), residual_var = residual_var)
 }
