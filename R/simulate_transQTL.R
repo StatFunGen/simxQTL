@@ -43,12 +43,13 @@ simulate_cis_expression <- function(G, A, phi_v) {
         sigma2_cis <- var(G[, connected_snps[1]] * beta[connected_snps[1]]) / phi_v - variance_sum
         while (sigma2_cis <= 0) {
             phi_v <- phi_v - 0.01
-            sigma2_cis <- var(E_comb[, affecting_genes[1]] * beta[affecting_genes[1]]) / phi_gene - variance_sum
+            sigma2_cis <- var(G[, connected_snps[1]] * beta[connected_snps[1]]) / phi_v - variance_sum
         }
         
         # Simulate gene expression
         E_tmp <- G %*% beta + rnorm(n, mean = 0, sd = sqrt(sigma2_cis))
-        E[, j] <- scale(E_tmp)
+        # E[, j] <- scale(E_tmp)
+        E[, j] <- E_tmp
     }
     
     return(E)
@@ -113,7 +114,8 @@ simulate_trans_expression <- function(A_trans, phi_gene, n = NULL, E_cis = NULL,
                 }
                 # Simulate gene expression
                 E_tmp <- E %*% beta + rnorm(n, mean = 0, sd = sqrt(sigma2_trans))
-                E[, j] <- scale(E_tmp)
+                # E[, j] <- scale(E_tmp)
+                E[, j] <- E_tmp
             }
         }
     } else if (type == 'ACC') {
@@ -136,7 +138,8 @@ simulate_trans_expression <- function(A_trans, phi_gene, n = NULL, E_cis = NULL,
                 }
                 # Multi-regression model for gene expression
                 E_tmp <- E_comb %*% beta + rnorm(n, mean = 0, sd = sqrt(sigma2_gene))
-                E_comb[, m+j] <- scale(E_tmp)
+                # E_comb[, m+j] <- scale(E_tmp)
+                E_comb[, m+j] <- E_tmp
             }
         }
         E <- E_comb[, (m + 1):(m + g)]
