@@ -277,8 +277,8 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residual_corr = NULL){
   if (!is_h2g_total) {
         max_causal <- max(apply(B, 2, function(x) sum(x != 0)))
-        h2g <- min(h2g * max_causal, max_h2g)
-    }
+        h2g <- min(h2g, max_h2g/max_causal)
+    }                             
   P = matrix(0, nrow = ncol(B), ncol = nrow(G)) # row: traits, column: different subjects
   mu = G %*% B 
   sigma = numeric(length = ncol(B))
@@ -286,7 +286,7 @@ sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residu
   if(is_h2g_total){
     sigma[i] = sqrt(var(mu[,i]) * (1-h2g) / h2g)
   }else{
-    first_index = min(which(B[,i]!=0))
+    first_index = min(which(B[,i]==1))
     if(var(G[,first_index])/h2g - var(mu[,i]) >=0){
     sigma[i] =  sqrt(var(G[,first_index])/h2g - var(mu[,i]))
     }else{
