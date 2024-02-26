@@ -276,8 +276,9 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 #' P = sim_multi_traits(G, B, h2g = 0.1, is_h2g_total = T, max_h2g = 1)
 sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residual_corr = NULL){
   if (!is_h2g_total) {
-        h2g <- min(h2g * nrow(B), max_h2g)
-    }
+        max_causal <- max(apply(B, 2, function(x) sum(x != 0)))
+        h2g <- min(h2g, max_h2g/max_causal)
+    }                             
   P = matrix(0, nrow = ncol(B), ncol = nrow(G)) # row: traits, column: different subjects
   mu = G %*% B 
   sigma = numeric(length = ncol(B))
@@ -285,7 +286,7 @@ sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residu
   if(is_h2g_total){
     sigma[i] = sqrt(var(mu[,i]) * (1-h2g) / h2g)
   }else{
-    first_index = min(which(B[,i]!=0))
+    first_index = min(which(B[,i]==1))
     if(var(G[,first_index])/h2g - var(mu[,i]) >=0){
     sigma[i] =  sqrt(var(G[,first_index])/h2g - var(mu[,i]))
     }else{
@@ -298,5 +299,5 @@ sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residu
   } 
   residual_var <- sweep(sweep(residual_corr, 2, sigma, "*"), 1, sigma, "*")
   P = mu + mvrnorm(n = nrow(G), mu = rep(0, ncol(residual_var)), Sigma = residual_var)
-  return(P = t(P), residual_var = residual_var)
+  return(list(P = t(P), residual_var = residual_var))
 }
