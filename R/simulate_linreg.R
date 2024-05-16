@@ -349,7 +349,7 @@ calculate_sumstat = function(X, Y){
     Freq = c()
     p = c()
     for(mm in 1:ncol(X)){
-        rr <- susieR::univariate_regression(Y, X[,mm])
+        rr <- susieR::univariate_regression(X[,mm], Y)
         Beta[mm] = rr$betahat
         se[mm] <- rr$sebetahat
         Freq[mm] = sum(X[,mm])/(2*nrow(X))
@@ -359,6 +359,6 @@ calculate_sumstat = function(X, Y){
         SNP = colnames(X),
         Beta = Beta,
         se = se,
-        Freq = Freq, p = p)
+        Freq = Freq, p = p, z = Beta / se)
     return(tb)
 }
