@@ -10,7 +10,7 @@ from GitHub, use [devtools][devtools]:
 
 ```R
 install.packages("devtools")
-devtools::install_github("cumc/simxQTL",build_vignettes = TRUE)
+devtools::install_github("StatFunGen/simxQTL",build_vignettes = FALSE)
 ```
 
 This command should automatically install all required packages if
