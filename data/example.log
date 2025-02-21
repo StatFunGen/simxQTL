@@ -1,0 +1,33 @@
+PLINK v2.00a4LM 64-bit Intel (11 Apr 2023)
+Options in effect:
+  --bfile /mnt/vast/hpc/csg/data_public/1000G_EUR_Phase3_plink/1000G.EUR.QC.9
+  --extract /home/hs3393/rss_qc/output/simulation_data/trimmed_genotype/LD_chr9_999_first1500_snps.txt
+  --make-bed
+  --out /home/hs3393/rss_qc/output/simulation_data/1000G_trimmed_genotype/LD_chr9_999_first1500_snps_1000G
+
+Hostname: node51
+Working directory: /mnt/vast/hpc/csg/hs3393/rss_qc/output/simulation_data
+Start time: Mon Feb 17 18:30:12 2025
+
+Random number seed: 1739835012
+773908 MiB RAM detected, ~680892 available; reserving 386954 MiB for main
+workspace.
+Using up to 2 compute threads.
+489 samples (0 females, 0 males, 489 ambiguous; 489 founders) loaded from
+/mnt/vast/hpc/csg/data_public/1000G_EUR_Phase3_plink/1000G.EUR.QC.9.fam.
+438106 variants loaded from
+/mnt/vast/hpc/csg/data_public/1000G_EUR_Phase3_plink/1000G.EUR.QC.9.bim.
+Note: No phenotype data present.
+--extract: 1323 variants remaining.
+1323 variants remaining after main filters.
+Writing
+/home/hs3393/rss_qc/output/simulation_data/1000G_trimmed_genotype/LD_chr9_999_first1500_snps_1000G.fam
+... done.
+Writing
+/home/hs3393/rss_qc/output/simulation_data/1000G_trimmed_genotype/LD_chr9_999_first1500_snps_1000G.bim
+... done.
+Writing
+/home/hs3393/rss_qc/output/simulation_data/1000G_trimmed_genotype/LD_chr9_999_first1500_snps_1000G.bed
+... done.
+
+End time: Mon Feb 17 18:30:12 2025
