@@ -299,5 +299,66 @@ sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residu
   } 
   residual_var <- sweep(sweep(residual_corr, 2, sigma, "*"), 1, sigma, "*")
   P = mu + mvrnorm(n = nrow(G), mu = rep(0, ncol(residual_var)), Sigma = residual_var)
-  return(list(P = t(P), residual_var = residual_var))
+  colnames(P) = paste0("Trait_", 1:ncol(P))
+  return(list(P = P, residual_var = residual_var))
+}
+
+#' Simulate Multiple Traits from Genotype and assigned causal index vector
+#' @export                                
+sim_beta_fix_variant = function(G, causal_index, ntrait = 1 , is_h2g_total = TRUE){
+  n_snps = ncol(G)
+  B = matrix(0, nrow =  ncol(G), ncol = ntrait)
+  if(is_h2g_total){
+      beta = numeric(n_snps)
+      beta[causal_index] = 1
+      for(i in 1:ntrait){
+        B[,i] = beta
+      }
+    }else{
+    beta = numeric(n_snps)
+    beta[causal_index[1]] = 1
+    var_vector = apply(as.matrix(G[,causal_index]), 2, var)
+    beta[causal_index] = sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
+    for(i in 1:ntrait){
+        B[,i] = beta
+      }
+
+    }
+
+  return(B)
+}
+                                
+# - Calculate LD matrix
+get_correlation <- function(X, intercepte = FALSE){
+    X = t(X)
+    # Center each variable
+    if (!intercepte){
+        X = X - rowMeans(X)
+    }
+    # Standardize each variable
+    X = X / sqrt(rowSums(X^2))
+    # Calculate correlations
+    cr = tcrossprod(X)
+    return(cr)
+}
+                                
+# calculate sumstat from X and Y
+calculate_sumstat = function(X, Y){
+    Beta = c()
+    se = c()
+    Freq = c()
+    p = c()
+    for(mm in 1:ncol(X)){
+        rr <- susieR::univariate_regression(X[,mm], Y)
+        Beta[mm] = rr$betahat
+        se[mm] <- rr$sebetahat
+        Freq[mm] = sum(X[,mm])/(2*nrow(X))
+        p[mm] = 2 * (1 - pnorm(abs(rr$betahat / rr$sebetahat)))
+    }
+        tb = tibble(
+        SNP = colnames(X),
+        Beta = Beta,
+        se = se,
+        Freq = Freq, p = p, z = Beta / se)
+    return(tb)
 }
