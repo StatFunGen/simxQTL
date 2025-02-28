@@ -235,6 +235,7 @@ generate_eqtl_data <- function(G,
     sentinel_index = sentinel_index,
     other_sparse_indices = other_sparse_indices,
     oligogenic_indices = oligogenic_indices,
-    infinitesimal_indices = infinitesimal_indices
+    infinitesimal_indices = infinitesimal_indices,
+    residual_variance = var_epsilon
   ))
 }
