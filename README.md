@@ -9,8 +9,8 @@ To install the latest version of the fasterscale package
 from GitHub, use [devtools][devtools]:
 
 ```R
-install.packages("devtools")
-devtools::install_github("StatFunGen/simxQTL",build_vignettes = FALSE)
+# install.packages("devtools")
+devtools::install_github("StatFunGen/simxQTL", build_vignettes = FALSE)
 ```
 
 This command should automatically install all required packages if
@@ -22,7 +22,7 @@ directory contains the fasterscale repository, run this code to
 install the package:
 
 ```R
-devtools::install_local("simxQTL",build_vignettes = TRUE)
+devtools::install_local("simxQTL", build_vignettes = FALSE)
 ```
 
 [devtools]: https://github.com/r-lib/devtools
