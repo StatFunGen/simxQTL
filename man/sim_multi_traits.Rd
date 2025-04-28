@@ -9,9 +9,8 @@ sim_multi_traits(
   B,
   h2g,
   is_h2g_total = TRUE,
-  max_h2g = 0.8,
-  residual_corr = NULL,
-  scale_Y = FALSE
+  max_h2g = 1,
+  residual_corr = NULL
 )
 }
 \arguments{
@@ -23,14 +22,10 @@ sim_multi_traits(
 
 \item{is_h2g_total}{Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).}
 
-\item{max_h2g}{Maximum heritability allowed in the model (default is 0.8).}
-
 \item{residual_corr}{Matrix of residual correlations (NULL for independent samples).}
-
-\item{scale_Y}{Logical indicating if the phenotypes should be scaled (default is FALSE).}
 }
 \value{
-A list containing the simulated phenotypes (`Y`) and residual variance (`residual_var`).
+A list containing the simulated phenotypes matrix (t * n, t = trait number, n = sample size) (`P`) and residual variance (`residual_var`).
 }
 \description{
 This function simulates multiple traits (phenotypes) based on genotype data, 
@@ -39,9 +34,8 @@ is total or per-SNP, optionally scales the phenotypes, and can handle residual c
 per eQTL heritability is 0.05 to 0.07 according to https://www.nature.com/articles/ng.3506
 }
 \examples{
-G <- matrix(rnorm(1000), nrow = 100, ncol = 10) # Random genotype matrix
+G = matrix(rbinom(1000, 2, 0.5), nrow = 1000, ncol = 50) 
 # Simulating effect sizes for two traits
-B <- sapply(1:2, function(i) sim_beta(RL, ncausal, eqtl_h2)) 
-h2g <- 0.5                                      # Heritability
-result <- sim_multi_traits(G, B, h2g)           # Simulate multiple traits
+B = sim_beta(G, ncausal = 5, ntrait = 3, is_h2g_total = F, shared_pattern = "all")
+P = sim_multi_traits(G, B, h2g = 0.1, is_h2g_total = T, max_h2g = 1)
 }

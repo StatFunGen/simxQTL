@@ -4,16 +4,16 @@
 \alias{sim_beta}
 \title{Simulate QTL Effects}
 \usage{
-sim_beta(RL, ncausal, eqtl_h2, rescale = TRUE)
+sim_beta(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern = "all")
 }
 \arguments{
-\item{RL}{Lower Cholesky factor of the p x p LD matrix for the population.}
+\item{G}{Genotype matrix}
 
-\item{ncausal}{Object of class NumCausalSNPs containing the number of causal SNPs to select.}
+\item{ncausal}{Output from function parse_num_causal_snps, how many variants have non-negative effects (being causal)}
 
-\item{eqtl_h2}{The heritability of gene expression.}
+\item{ntrait}{Number of simulated phenotypes (traits)}
 
-\item{rescale}{Logical indicating whether to rescale effects such that var(b V b) = h2 (default is TRUE).}
+\item{shared_pattern:}{if is "all", all traits will have the same causal variant(s) with non-zero effect. if is "random", all traits will have independent (random) causal variant(s)}
 }
 \value{
 Vector of causal effects.
@@ -22,10 +22,8 @@ Vector of causal effects.
 Sample QTL effects under a specified architecture.
 }
 \examples{
-# Create a correlation matrix as R
-R <- matrix(c(1, 0.5, 0.5, 1), nrow = 2, ncol = 2)
-ncausal <- list(value = 50, is_pct = TRUE)  # 50\% of observed SNPs
-eqtl_h2 <- 0.5                              # Heritability of gene expression
-RL <- get_lower_chol(R)                         # Compute lower Cholesky decomposition
-sim_beta(RL, ncausal, eqtl_h2)               # Simulate QTL effects
+# Create a genotype matrix
+G = matrix(rbinom(1000, 2, 0.5), nrow = 1000, ncol = 50) 
+B = sim_beta(G, ncausal = 5, ntrait = 3, is_h2g_total = T, shared_pattern = "all")
+B = sim_beta(G, ncausal = 1, ntrait = 5, is_h2g_total = F, shared_pattern = "random")
 }
