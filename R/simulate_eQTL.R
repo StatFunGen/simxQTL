@@ -182,32 +182,27 @@ simulate_infinitesimal_effects <- function(G, h2_infinitesimal, infinitesimal_in
 #' Identify Causal SNPs Based on Statistical Power
 #'
 #' This function identifies SNPs that have sufficient statistical power to be
-#' detected as causal. Power is calculated based on the non-centrality parameter 
+#' detected as causal. Power is calculated based on the non-centrality parameter
 #' of a chi-square test, considering sample size, effect size, and SNP variance.
 #'
 #' @param G Genotype matrix (samples × SNPs).
-#' @param y Phenotype vector.
 #' @param beta Vector of true effect sizes for each SNP.
+#' @param residual_variance Residual (error) variance.
 #' @param power Minimum power threshold for a SNP to be considered causal (default 0.80).
 #' @return A vector of indices corresponding to SNPs with power >= threshold.
 #' @details The function calculates power using a non-central chi-square distribution
-#'   with non-centrality parameter NCP = n * beta^2 * var(X) / var(y), where the
+#'   with non-centrality parameter NCP = n * beta^2 * var(X) / residual_variance, where the
 #'   significance threshold is Bonferroni-corrected (alpha = 0.05 / p).
 #' @export
-is_causal_power <- function(G, y, beta, power = 0.80) {
+is_causal_power <- function(G, beta, residual_variance, power = 0.80) {
   n <- nrow(G)
   p <- ncol(G)
   alpha <- 0.05 / p
 
-  # Calculate non-centrality parameter for each SNP
-  var_y <- as.numeric(var(y))
   var_snp <- apply(G, 2, var)
-  ncp <- n * (beta^2) * var_snp / var_y
+  ncp <- n * (beta^2) * var_snp / residual_variance
 
-  # Find critical value for chi-square test
   crit_val <- qchisq(alpha, df = 1, lower.tail = FALSE)
-
-  # Power = P(chi-square > crit_val | NCP)
   power_per_snp <- pchisq(crit_val, df = 1, ncp = ncp, lower.tail = FALSE)
 
   causal_idx <- which(power_per_snp >= power)
@@ -328,7 +323,7 @@ generate_eqtl_data <- function(G,
     y <- g + epsilon
 
     # Calculate causal indices using power-based identification
-    causal_indices <- is_causal_power(G, y, beta, power = 0.80)
+    causal_indices <- is_causal_power(G, beta, var_epsilon, power = 0.80)
 
     # Check LD constraint if independent = TRUE
     if (independent && length(causal_indices) > 1) {
