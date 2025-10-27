@@ -179,6 +179,37 @@ simulate_infinitesimal_effects <- function(G, h2_infinitesimal, infinitesimal_in
 }
 
 ###############################################################################
+#' Identify Causal SNPs Based on Statistical Power
+#'
+#' This function identifies SNPs that have sufficient statistical power to be
+#' detected as causal. Power is calculated based on the non-centrality parameter
+#' of a chi-square test, considering sample size, effect size, and SNP variance.
+#'
+#' @param G Genotype matrix (samples × SNPs).
+#' @param beta Vector of true effect sizes for each SNP.
+#' @param residual_variance Residual (error) variance.
+#' @param power Minimum power threshold for a SNP to be considered causal (default 0.80).
+#' @return A vector of indices corresponding to SNPs with power >= threshold.
+#' @details The function calculates power using a non-central chi-square distribution
+#'   with non-centrality parameter NCP = n * beta^2 * var(X) / residual_variance, where the
+#'   significance threshold is Bonferroni-corrected (alpha = 0.05 / p).
+#' @export
+is_causal_power <- function(G, beta, residual_variance, power = 0.80) {
+  n <- nrow(G)
+  p <- ncol(G)
+  alpha <- 0.05 / p
+
+  var_snp <- apply(G, 2, var)
+  ncp <- n * (beta^2) * var_snp / residual_variance
+
+  crit_val <- qchisq(alpha, df = 1, lower.tail = FALSE)
+  power_per_snp <- pchisq(crit_val, df = 1, ncp = ncp, lower.tail = FALSE)
+
+  causal_idx <- which(power_per_snp >= power)
+  return(causal_idx)
+}
+
+###############################################################################
 #' Generate eQTL Data with Multiple Genetic Architecture Components
 #'
 #' This function generates simulated gene expression data with a partitioned
@@ -199,18 +230,19 @@ simulate_infinitesimal_effects <- function(G, h2_infinitesimal, infinitesimal_in
 #' @param mixture_sd_props Proportions of max_oligogenic_effect for mixture components (default c(0.3, 0.7)).
 #' @param sentinel_dominance Multiplicative factor ensuring sentinel > other sparse (default 1.5).
 #' @param standardize Logical; if TRUE, the genotype matrix will be standardized.
+#' @param independent Logical; if TRUE, ensures causal SNPs have |r| < 0.15 with each other (default FALSE).
 #' @param seed Optional seed for reproducibility.
 #' @return A list containing the standardized genotype matrix, simulated phenotype,
 #'   combined beta values, indices for each effect component, realized heritability estimates,
-#'   effect size ranges, and hierarchy validation results.
+#'   effect size ranges, hierarchy validation results, and causal indices.
 #' @export
 generate_eqtl_data <- function(G,
-                               h2_total = 0.19,
-                               prop_h2_sparse = 0.65,
-                               prop_h2_oligogenic = 0.10,
-                               prop_h2_infinitesimal = 0.25,
+                               h2_total = 0.30,
+                               prop_h2_sparse = 0.40,
+                               prop_h2_oligogenic = 0.05,
+                               prop_h2_infinitesimal = 0.55,
                                prop_h2_sentinel = 0.87,
-                               n_oligogenic = 10,
+                               n_oligogenic = 20,
                                mixture_props = c(0.75, 0.25),
                                n_other_sparse = 1,
                                min_sparse_effect = 0.10,
@@ -218,6 +250,7 @@ generate_eqtl_data <- function(G,
                                mixture_sd_props = c(0.3, 0.7),
                                sentinel_dominance = 1.5,
                                standardize = TRUE,
+                               independent = TRUE,
                                seed = NULL) {
   # Input validation
   if (abs(prop_h2_sparse + prop_h2_oligogenic + prop_h2_infinitesimal - 1) > 1e-6) {
@@ -245,37 +278,77 @@ generate_eqtl_data <- function(G,
   h2_oligogenic <- h2_total * prop_h2_oligogenic
   h2_infinitesimal <- h2_total * prop_h2_infinitesimal
 
-  # 1. Sparse Effects (sentinel + additional sparse SNPs) with hierarchy enforcement
-  sparse_res <- simulate_sparse_effects(G, h2_sparse, prop_h2_sentinel, n_other_sparse,
-                                        min_sparse_effect, sentinel_dominance)
-  beta_sparse <- sparse_res$beta
-  sentinel_index <- sparse_res$sentinel_index
-  other_sparse_indices <- sparse_res$other_sparse_indices
-  sparse_indices <- c(sentinel_index, other_sparse_indices)
+  # Setup for LD constraint checking
+  max_attempts <- if (independent) 100 else 1
+  attempt <- 0
+  ld_satisfied <- FALSE
 
-  # 2. Oligogenic Effects with maximum constraint
-  non_sparse_indices <- setdiff(1:n_features, sparse_indices)
-  oligo_res <- simulate_oligogenic_effects(G, h2_oligogenic, n_oligogenic,
-                                           mixture_props, non_sparse_indices,
-                                           max_oligogenic_effect, mixture_sd_props)
-  beta_oligo <- oligo_res$beta
-  oligogenic_indices <- oligo_res$oligogenic_indices
+  # Main data generation loop
+  while (!ld_satisfied && attempt < max_attempts) {
+    attempt <- attempt + 1
 
-  # 3. Infinitesimal Effects (remaining SNPs)
-  infinitesimal_indices <- setdiff(non_sparse_indices, oligogenic_indices)
-  beta_inf <- simulate_infinitesimal_effects(G, h2_infinitesimal, infinitesimal_indices)
+    # Set seed for this attempt (for reproducibility)
+    if (!is.null(seed) && attempt > 1) {
+      set.seed(seed * 1000 + attempt)
+    }
 
-  # Combine all effect components
-  beta <- beta_sparse + beta_oligo + beta_inf
+    # 1. Sparse Effects (sentinel + additional sparse SNPs) with hierarchy enforcement
+    sparse_res <- simulate_sparse_effects(G, h2_sparse, prop_h2_sentinel, n_other_sparse,
+                                          min_sparse_effect, sentinel_dominance)
+    beta_sparse <- sparse_res$beta
+    sentinel_index <- sparse_res$sentinel_index
+    other_sparse_indices <- sparse_res$other_sparse_indices
+    sparse_indices <- c(sentinel_index, other_sparse_indices)
 
-  # Generate latent genetic component and phenotype
-  g <- as.vector(G %*% beta)
-  var_g <- var(g)
-  var_epsilon <- var_g * (1 - h2_total) / h2_total
-  epsilon <- rnorm(n_samples, 0, sqrt(var_epsilon))
-  y <- g + epsilon
+    # 2. Oligogenic Effects with maximum constraint
+    non_sparse_indices <- setdiff(1:n_features, sparse_indices)
+    oligo_res <- simulate_oligogenic_effects(G, h2_oligogenic, n_oligogenic,
+                                             mixture_props, non_sparse_indices,
+                                             max_oligogenic_effect, mixture_sd_props)
+    beta_oligo <- oligo_res$beta
+    oligogenic_indices <- oligo_res$oligogenic_indices
 
-  # Calculate empirical heritability for each component
+    # 3. Infinitesimal Effects (remaining SNPs)
+    infinitesimal_indices <- setdiff(non_sparse_indices, oligogenic_indices)
+    beta_inf <- simulate_infinitesimal_effects(G, h2_infinitesimal, infinitesimal_indices)
+
+    # Combine all effect components
+    beta <- beta_sparse + beta_oligo + beta_inf
+
+    # Generate latent genetic component and phenotype
+    g <- as.vector(G %*% beta)
+    var_g <- var(g)
+    var_epsilon <- var_g * (1 - h2_total) / h2_total
+    epsilon <- rnorm(n_samples, 0, sqrt(var_epsilon))
+    y <- g + epsilon
+
+    # Calculate causal indices using power-based identification
+    causal_indices <- is_causal_power(G, beta, var_epsilon, power = 0.80)
+
+    # Check LD constraint if independent = TRUE
+    if (independent && length(causal_indices) > 1) {
+      # Calculate correlation matrix for causal SNPs
+      causal_cor <- cor(G[, causal_indices, drop = FALSE])
+
+      # Check if all pairwise |r| < 0.15
+      high_ld <- which(abs(causal_cor) >= 0.15 & upper.tri(causal_cor, diag = FALSE), arr.ind = TRUE)
+
+      if (nrow(high_ld) == 0) {
+        ld_satisfied <- TRUE
+      }
+    } else {
+      # If not independent OR only 0-1 causal accept
+      ld_satisfied <- TRUE
+    }
+  }
+
+  # Warn if LD constraint not satisfied
+  if (independent && !ld_satisfied) {
+    warning(paste("Failed to satisfy LD constraint after", max_attempts,
+                  "attempts. Returning last generated data."))
+  }
+
+  # Calculate empirical heritability for each component (final data)
   var_y <- var(y)
   h2_sentinel_actual <- var(G[, sentinel_index] * beta[sentinel_index]) / var_y
   h2_sparse_actual <- var(as.vector(G[, sparse_indices] %*% beta[sparse_indices])) / var_y
@@ -297,6 +370,7 @@ generate_eqtl_data <- function(G,
     other_sparse_indices = other_sparse_indices,
     oligogenic_indices = oligogenic_indices,
     infinitesimal_indices = infinitesimal_indices,
-    residual_variance = var_epsilon
+    residual_variance = var_epsilon,
+    causal = causal_indices
   ))
 }
