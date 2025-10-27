@@ -274,34 +274,48 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 #' # Simulating effect sizes for two traits
 #' B = sim_beta(G, ncausal = 5, ntrait = 3, is_h2g_total = F, shared_pattern = "all")
 #' P = sim_multi_traits(G, B, h2g = 0.1, is_h2g_total = T, max_h2g = 1)
-sim_multi_traits = function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1,  residual_corr = NULL){
+sim_multi_traits <- function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1, residual_corr = NULL, null_sigma = sqrt(0.1)){
   if (!is_h2g_total) {
-        max_causal <- max(apply(B, 2, function(x) sum(x != 0)))
-        h2g <- min(h2g, max_h2g/max_causal)
-    }                             
-  P = matrix(0, nrow = ncol(B), ncol = nrow(G)) # row: traits, column: different subjects
-  mu = G %*% B 
-  sigma = numeric(length = ncol(B))
-  for(i in 1:ncol(mu)){
-  if(is_h2g_total){
-    sigma[i] = sqrt(var(mu[,i]) * (1-h2g) / h2g)
-  }else{
-    first_index = min(which(B[,i]==1))
-    if(var(G[,first_index])/h2g - var(mu[,i]) >=0){
-    sigma[i] =  sqrt(var(G[,first_index])/h2g - var(mu[,i]))
-    }else{
-      stop("Per SNP heritability too large, residual variance will be less than 0.")
-    }
+    max_causal <- max(apply(B, 2, function(x) sum(x != 0)))
+    h2g <- min(h2g, max_h2g / max_causal)
+  }
+  
+  P <- matrix(0, nrow = ncol(B), ncol = nrow(G)) # row: traits, column: different subjects
+  mu <- G %*% B 
+  sigma <- numeric(length = ncol(B))
+  
+  for (i in 1:ncol(mu)) {
+    if (is_h2g_total) {
+      if (sum(abs(mu[, i])) == 0) {
+        sigma[i] <- null_sigma
+      } else {
+        sigma[i] <- sqrt(var(mu[, i]) * (1 - h2g) / h2g)
+      }
+    } else {
+      if (sum(abs(mu[, i])) == 0) {
+        sigma[i] <- null_sigma
+      } else {
+        first_index <- min(which(B[, i] == 1))
+        if (var(G[, first_index]) / h2g - var(mu[, i]) >= 0) {
+          sigma[i] <- sqrt(var(G[, first_index]) / h2g - var(mu[, i])) 
+        } else {
+          stop("Per SNP heritability too large, residual variance will be less than 0.")
+        }
+      }
     }
   }
-  if(is.null(residual_corr)){
+  
+  if (is.null(residual_corr)) {
     residual_corr <- diag(length(sigma))
-  } 
+  }
+  
   residual_var <- sweep(sweep(residual_corr, 2, sigma, "*"), 1, sigma, "*")
-  P = mu + mvrnorm(n = nrow(G), mu = rep(0, ncol(residual_var)), Sigma = residual_var)
-  colnames(P) = paste0("Trait_", 1:ncol(P))
+  P <- mu + mvrnorm(n = nrow(G), mu = rep(0, ncol(residual_var)), Sigma = residual_var)
+  colnames(P) <- paste0("Trait_", 1:ncol(P))
+  
   return(list(P = P, residual_var = residual_var))
 }
+
 
 #' Simulate Multiple Traits from Genotype and assigned causal index vector
 #' @export                                
@@ -327,6 +341,8 @@ sim_beta_fix_variant = function(G, causal_index, ntrait = 1 , is_h2g_total = TRU
 
   return(B)
 }
+
+
                                 
 # - Calculate LD matrix
 get_correlation <- function(X, intercepte = FALSE){
