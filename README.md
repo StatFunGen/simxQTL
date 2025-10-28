@@ -1,9 +1,5 @@
 # simxQTL
 
-<!-- badges: start -->
-[![pkgdown](https://github.com/StatFunGen/simxQTL/workflows/pkgdown/badge.svg)](https://statfungen.github.io/simxQTL/)
-<!-- badges: end -->
-
 In house simulation R package to support investigations of various QTL association methods
 
 
