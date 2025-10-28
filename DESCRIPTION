@@ -6,15 +6,18 @@ Date: 2023-12-16
 Title: Simulate xQTL associations
 Description: Provides a fast and memory-efficient method for
     centering and scaling matrices.
-URL: https://github.com/cumc/simxQTL
-BugReports: https://github.com/cumc/simxQTL/issues
-Authors@R: person("Xuewei","Cao",role = c("cre","aut"),
-                  email = "wang.gao@columbia.edu")
+URL: https://statfungen.github.io/simxQTL/, https://github.com/StatFunGen/simxQTL
+BugReports: https://github.com/StatFunGen/simxQTL/issues
+Authors@R: c(
+    person("Gao", "Wang", role = c("cre", "aut"), email = "wang.gao@columbia.edu"),
+    person("Alexander", "McCreight", role = "aut"),
+    person("Xuewei", "Cao", role = "aut"),
+    person("Haochen", "Sun", role = "aut"))
 License: MIT + file LICENSE
 Imports:
     matrixStats,
     Rcpp (>= 1.0.3)
-Suggests: 
+Suggests:
     testthat,
     knitr,
     rmarkdown
