@@ -17,7 +17,7 @@ Helper function to parse the number of causal SNPs with percentage and average m
 }
 \examples{
 parse_num_causal_snps(10)       # 10 SNPs
-parse_num_causal_snps(“10”)     # can also acept string format
+parse_num_causal_snps("10")     # can also accept string format
 parse_num_causal_snps("50pct")    # 50\% of observed SNPs
 parse_num_causal_snps("5avg")     # Average of 5 SNPs, sampled from truncated Poisson distribution
 parse_num_causal_snps("0avg")     # Invalid: Average number of causal SNPs must be at least 1

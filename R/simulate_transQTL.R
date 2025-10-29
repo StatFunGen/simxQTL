@@ -17,7 +17,7 @@
 #' G <- matrix(rbinom(n * p, size = 2, prob = 0.3), ncol = p)
 #' A <- matrix(sample(0:1, p * m, replace = TRUE), nrow = p)
 #' phi_v <- 0.05
-#' E <- simulation_cis_expression(G, A, phi_v)
+#' E <- simulate_cis_expression(G, A, phi_v)
 #'
 #' @export
 simulate_cis_expression <- function(G, A, phi_v) {

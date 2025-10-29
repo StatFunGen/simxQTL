@@ -10,7 +10,7 @@
 #'
 #' @examples
 #' parse_num_causal_snps(10)       # 10 SNPs
-#' parse_num_causal_snps(“10”)     # can also acept string format
+#' parse_num_causal_snps("10")     # can also accept string format
 #' parse_num_causal_snps("50pct")    # 50% of observed SNPs
 #' parse_num_causal_snps("5avg")     # Average of 5 SNPs, sampled from truncated Poisson distribution
 #' parse_num_causal_snps("0avg")     # Invalid: Average number of causal SNPs must be at least 1
@@ -46,7 +46,7 @@ parse_num_causal_snps <- function(value) {
       }
     }
   } else {
-    num_tmp = as.numeric(gsub("[^0-9]+", "", value))
+    num_tmp <- as.numeric(gsub("[^0-9]+", "", value))
   }
 
   return(list(value = num_tmp, is_pct = is_pct))
@@ -99,8 +99,9 @@ compute_s2g <- function(RL, beta) {
 #' @param G Genotype matrix
 #' @param ncausal Output from function parse_num_causal_snps, how many variants have non-negative effects (being causal)
 #' @param ntrait Number of simulated phenotypes (traits)
-#' @param shared_pattern: if is "all", all traits will have the same causal variant(s) with non-zero effect. if is "random", all traits will have independent (random) causal variant(s)
-#' @return Vector of causal effects.
+#' @param is_h2g_total Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).
+#' @param shared_pattern if is "all", all traits will have the same causal variant(s) with non-zero effect. if is "random", all traits will have independent (random) causal variant(s)
+#' @return Matrix of causal effect sizes (variants × traits).
 #' @importFrom stats rnorm
 #' @export
 #'
@@ -109,57 +110,57 @@ compute_s2g <- function(RL, beta) {
 #' G = matrix(rbinom(1000, 2, 0.5), nrow = 1000, ncol = 50) 
 #' B = sim_beta(G, ncausal = 5, ntrait = 3, is_h2g_total = T, shared_pattern = "all")
 #' B = sim_beta(G, ncausal = 1, ntrait = 5, is_h2g_total = F, shared_pattern = "random")
-sim_beta = function(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern = "all"){
-  n_snps = ncol(G)
-  ncausal = parse_num_causal_snps(ncausal)
-  n_causal = if(ncausal$is_pct){
+sim_beta <- function(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern = "all"){
+  n_snps <- ncol(G)
+  ncausal <- parse_num_causal_snps(ncausal)
+  n_causal <- if(ncausal$is_pct){
     max(1, round(ncausal$value * n_snps))
   }else{
     min(ncausal$value, n_snps)
   }
-  B = matrix(0, nrow =  ncol(G), ncol = ntrait)
-  
+  B <- matrix(0, nrow =  ncol(G), ncol = ntrait)
+
   if(shared_pattern == "all"){
     if(is_h2g_total){
-      causal_index = sample(seq_len(n_snps), n_causal)
-      beta = numeric(n_snps)
-      beta[causal_index] = 1
+      causal_index <- sample(seq_len(n_snps), n_causal)
+      beta <- numeric(n_snps)
+      beta[causal_index] <- 1
       for(i in 1:ntrait){
-        B[,i] = beta
+        B[,i] <- beta
       }
     }else{
-      causal_index = sample(seq_len(n_snps), n_causal)
-    beta = numeric(n_snps)
-    beta[causal_index[1]] = 1
-    var_vector = apply(as.matrix(G[,causal_index]), 2, var)
-    beta[causal_index] = sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
-    for(i in 1:ntrait){
-        B[,i] = beta
+      causal_index <- sample(seq_len(n_snps), n_causal)
+      beta <- numeric(n_snps)
+      beta[causal_index[1]] <- 1
+      var_vector <- apply(as.matrix(G[,causal_index]), 2, var)
+      beta[causal_index] <- sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
+      for(i in 1:ntrait){
+        B[,i] <- beta
       }
     }
-    
+
   }else if(shared_pattern == "random"){
     if(is_h2g_total){
       for(i in 1:ntrait){
-        causal_index = sample(seq_len(n_snps), n_causal)
-        beta = numeric(n_snps)
-        beta[causal_index] = 1
+        causal_index <- sample(seq_len(n_snps), n_causal)
+        beta <- numeric(n_snps)
+        beta[causal_index] <- 1
 
-        B[,i] = beta
+        B[,i] <- beta
       }
     }else{
-          for(i in 1:ntrait){
-        causal_index = sample(seq_len(n_snps), n_causal)
-      beta = numeric(n_snps)
-      beta[causal_index[1]] = 1
-      var_vector = apply(as.matrix(G[,causal_index]), 2, var)
-      beta[causal_index] = sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
+      for(i in 1:ntrait){
+        causal_index <- sample(seq_len(n_snps), n_causal)
+        beta <- numeric(n_snps)
+        beta[causal_index[1]] <- 1
+        var_vector <- apply(as.matrix(G[,causal_index]), 2, var)
+        beta[causal_index] <- sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
 
-        B[,i] = beta
+        B[,i] <- beta
       }
-    }    
-    
-    
+    }
+
+
   }else{
     stop('Shared pattern must be "all" or "random"!')
   }
@@ -178,14 +179,12 @@ sim_beta = function(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern 
 #'
 #' @examples
 #' R <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)  # LD matrix
-#' n <- 100                                  # Number of genotypes to sample
-#' RL <- get_lower_chol(R)                              # Compute lower Cholesky decomposition
-#' G <- sim_geno(RL, n)                       # Simulate genotypes
-#' ncausal <- list(value = 50, is_pct = TRUE)  # 50% of observed SNPs
-#' eqtl_h2 <- 0.5                              # Heritability of gene expression
-#' b <- sim_beta(RL, ncausal, eqtl_h2) 
-#' g <- G %*% b                   # latent genetic values
-#' y <- simulate_polygenic_trait(g, eqtl_h2)  # Simulate the complex trait
+#' n <- 100                                  # Number of samples
+#' G <- sim_geno_LD(n, R)                     # Simulate genotypes
+#' ncausal <- 1                               # Number of causal SNPs
+#' b <- sim_beta(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern = "all")
+#' g <- G %*% b                               # latent genetic values
+#' y <- simulate_polygenic_trait(g, h2g = 0.5)  # Simulate the complex trait
 simulate_polygenic_trait <- function(g, h2g) {
   n <- length(g)
   
@@ -264,7 +263,9 @@ sim_sumstats <- function(RL, ngwas, beta, h2ge) {
 #' @param B Matrix of effect sizes for multiple traits.
 #' @param h2g Heritability (proportion of variance explained by genetics).
 #' @param is_h2g_total Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).
+#' @param max_h2g Maximum heritability allowed (default 1).
 #' @param residual_corr Matrix of residual correlations (NULL for independent samples).
+#' @param null_sigma Standard deviation for null traits (default sqrt(0.1)).
 #' @return A list containing the simulated phenotypes matrix (t * n, t = trait number, n = sample size) (`P`) and residual variance (`residual_var`).
 #' @importFrom MASS mvrnorm
 #' @export
@@ -317,64 +318,100 @@ sim_multi_traits <- function(G, B, h2g, is_h2g_total = TRUE, max_h2g = 1, residu
 }
 
 
-#' Simulate Multiple Traits from Genotype and assigned causal index vector
-#' @export                                
-sim_beta_fix_variant = function(G, causal_index, ntrait = 1 , is_h2g_total = TRUE){
-  n_snps = ncol(G)
-  B = matrix(0, nrow =  ncol(G), ncol = ntrait)
+#' Simulate Multiple Traits from Genotype and Assigned Causal Index Vector
+#'
+#' @param G Genotype matrix.
+#' @param causal_index Vector of indices for causal variants.
+#' @param ntrait Number of traits to simulate.
+#' @param is_h2g_total Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).
+#' @return Matrix of effect sizes (variants × traits).
+#' @export
+sim_beta_fix_variant <- function(G, causal_index, ntrait = 1, is_h2g_total = TRUE){
+  n_snps <- ncol(G)
+  B <- matrix(0, nrow = ncol(G), ncol = ntrait)
   if(is_h2g_total){
-      beta = numeric(n_snps)
-      beta[causal_index] = 1
-      for(i in 1:ntrait){
-        B[,i] = beta
-      }
-    }else{
-    beta = numeric(n_snps)
-    beta[causal_index[1]] = 1
-    var_vector = apply(as.matrix(G[,causal_index]), 2, var)
-    beta[causal_index] = sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
+    beta <- numeric(n_snps)
+    beta[causal_index] <- 1
     for(i in 1:ntrait){
-        B[,i] = beta
-      }
-
+      B[,i] <- beta
     }
+  }else{
+    beta <- numeric(n_snps)
+    beta[causal_index[1]] <- 1
+    var_vector <- apply(as.matrix(G[,causal_index]), 2, var)
+    beta[causal_index] <- sqrt(beta[causal_index[1]]^2 * var_vector[1] / var_vector)
+    for(i in 1:ntrait){
+      B[,i] <- beta
+    }
+  }
 
   return(B)
 }
 
 
-                                
-# - Calculate LD matrix
-get_correlation <- function(X, intercepte = FALSE){
-    X = t(X)
+#' Calculate LD (Correlation) Matrix
+#'
+#' Computes the linkage disequilibrium (correlation) matrix from genotype data.
+#'
+#' @param X Genotype matrix (samples × SNPs).
+#' @param intercept Logical; if FALSE (default), centers each variable before calculating correlations.
+#' @return A correlation matrix representing the LD structure.
+#' @export
+#'
+#' @examples
+#' G <- matrix(rbinom(1000, 2, 0.5), nrow = 100, ncol = 10)
+#' LD <- get_correlation(G)
+get_correlation <- function(X, intercept = FALSE){
+    X <- t(X)
     # Center each variable
-    if (!intercepte){
-        X = X - rowMeans(X)
+    if (!intercept){
+        X <- X - rowMeans(X)
     }
     # Standardize each variable
-    X = X / sqrt(rowSums(X^2))
+    X <- X / sqrt(rowSums(X^2))
     # Calculate correlations
-    cr = tcrossprod(X)
+    cr <- tcrossprod(X)
     return(cr)
 }
-                                
-# calculate sumstat from X and Y
-calculate_sumstat = function(X, Y){
-    Beta = c()
-    se = c()
-    Freq = c()
-    p = c()
-    for(mm in 1:ncol(X)){
-        rr <- susieR::univariate_regression(X[,mm], Y)
-        Beta[mm] = rr$betahat
-        se[mm] <- rr$sebetahat
-        Freq[mm] = sum(X[,mm])/(2*nrow(X))
-        p[mm] = 2 * (1 - pnorm(abs(rr$betahat / rr$sebetahat)))
-    }
-        tb = tibble(
+#' Calculate Summary Statistics from Genotype and Phenotype
+#'
+#' Computes GWAS-style summary statistics (beta, standard error, frequency, p-value, z-score)
+#' from genotype and phenotype data using univariate regression.
+#'
+#' @param X Genotype matrix (samples × SNPs).
+#' @param Y Phenotype vector (length = number of samples).
+#' @return A tibble containing summary statistics with columns: SNP, Beta, se, Freq, p, z.
+#' @importFrom susieR univariate_regression
+#' @importFrom tibble tibble
+#' @export
+#'
+#' @examples
+#' G <- matrix(rbinom(1000, 2, 0.5), nrow = 100, ncol = 10)
+#' Y <- rnorm(100)
+#' colnames(G) <- paste0("SNP", 1:10)
+#' sumstats <- calculate_sumstat(G, Y)
+calculate_sumstat <- function(X, Y){
+    # Run univariate regression for all SNPs at once
+    results <- lapply(1:ncol(X), function(mm) {
+        univariate_regression(X[, mm, drop = FALSE], Y)
+    })
+
+    # Extract results vectorized
+    Beta <- vapply(results, function(r) r$betahat, numeric(1))
+    se <- vapply(results, function(r) r$sebetahat, numeric(1))
+
+    # Compute frequency and p-values vectorized
+    Freq <- colSums(X) / (2 * nrow(X))
+    z <- Beta / se
+    p <- 2 * pnorm(abs(z), lower.tail = FALSE)
+
+    tb <- tibble(
         SNP = colnames(X),
         Beta = Beta,
         se = se,
-        Freq = Freq, p = p, z = Beta / se)
+        Freq = Freq,
+        p = p,
+        z = z
+    )
     return(tb)
 }

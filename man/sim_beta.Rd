@@ -13,10 +13,12 @@ sim_beta(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern = "all")
 
 \item{ntrait}{Number of simulated phenotypes (traits)}
 
-\item{shared_pattern:}{if is "all", all traits will have the same causal variant(s) with non-zero effect. if is "random", all traits will have independent (random) causal variant(s)}
+\item{is_h2g_total}{Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).}
+
+\item{shared_pattern}{if is "all", all traits will have the same causal variant(s) with non-zero effect. if is "random", all traits will have independent (random) causal variant(s)}
 }
 \value{
-Vector of causal effects.
+Matrix of causal effect sizes (variants × traits).
 }
 \description{
 Sample QTL effects under a specified architecture.

@@ -19,12 +19,10 @@ Simulate a complex trait as a function of latent genetic values and environmenta
 }
 \examples{
 R <- matrix(c(1, 0.5, 0.5, 1), nrow = 2)  # LD matrix
-n <- 100                                  # Number of genotypes to sample
-RL <- get_lower_chol(R)                              # Compute lower Cholesky decomposition
-G <- sim_geno(RL, n)                       # Simulate genotypes
-ncausal <- list(value = 50, is_pct = TRUE)  # 50\% of observed SNPs
-eqtl_h2 <- 0.5                              # Heritability of gene expression
-b <- sim_beta(RL, ncausal, eqtl_h2) 
-g <- G \%*\% b                   # latent genetic values
-y <- simulate_polygenic_trait(g, eqtl_h2)  # Simulate the complex trait
+n <- 100                                  # Number of samples
+G <- sim_geno_LD(n, R)                     # Simulate genotypes
+ncausal <- 1                               # Number of causal SNPs
+b <- sim_beta(G, ncausal, ntrait = 1, is_h2g_total = TRUE, shared_pattern = "all")
+g <- G \%*\% b                               # latent genetic values
+y <- simulate_polygenic_trait(g, h2g = 0.5)  # Simulate the complex trait
 }
