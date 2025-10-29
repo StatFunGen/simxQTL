@@ -28,7 +28,7 @@ sim_geno_LD(
 
 \item{is.discrete}{Logical, whether to generate discrete (TRUE) or continuous (FALSE) genotypes.}
 
-\item{scale}{Logical, whether to scale the data using scale_faster.}
+\item{scale}{Logical, whether to scale the data.}
 
 \item{tol}{Tolerance for checking diagonal elements of LD matrix.}
 }

@@ -4,7 +4,7 @@
 #' @param p Number of SNPs.
 #' @param min_maf Minimum minor allele frequency.
 #' @param max_maf Maximum minor allele frequency.
-#' @param scale Logical, whether to scale the data using scale_faster.
+#' @param scale Logical, whether to scale the data.
 #' @return A matrix of genotypes.
 #' @examples
 #' sim_geno_indep(n = 100, p = 10, min_maf = 0.01, max_maf = 0.4, scale = TRUE)
@@ -19,7 +19,7 @@ sim_geno_indep <- function(n, p, min_maf = 0.01, max_maf = 0.4, scale = FALSE) {
   colnames(G) <- paste0("variant", 1:p)
 
   if (scale) {
-    G <- scale_faster(G)
+    G <- scale(G)
   }
 
   return(G)
@@ -33,7 +33,7 @@ sim_geno_indep <- function(n, p, min_maf = 0.01, max_maf = 0.4, scale = FALSE) {
 #' @param max_maf Maximum minor allele frequency.
 #' @param lambda Regularization parameter.
 #' @param is.discrete Logical, whether to generate discrete (TRUE) or continuous (FALSE) genotypes.
-#' @param scale Logical, whether to scale the data using scale_faster.
+#' @param scale Logical, whether to scale the data.
 #' @param tol Tolerance for checking diagonal elements of LD matrix.
 #' @return A matrix of genotypes.
 #' @examples
@@ -56,7 +56,7 @@ sim_geno_LD <- function(n, LD, min_maf = 0.01, max_maf = 0.4, lambda = 1e-3, is.
   }
 
   if (scale) {
-    G <- scale_faster(G)
+    G <- scale(G)
   }
 
   colnames(G) <- paste0("variant", 1:p)
@@ -68,7 +68,7 @@ sim_geno_LD <- function(n, LD, min_maf = 0.01, max_maf = 0.4, lambda = 1e-3, is.
 #' @param n Sample size.
 #' @param file_path Path to the UK Biobank file.
 #' @param min_maf Minimum minor allele frequency.
-#' @param scale Logical, whether to scale the data using scale_faster.
+#' @param scale Logical, whether to scale the data.
 #' @return A matrix of genotypes.
 #' @examples
 #' sim_geno_UKB(n = 100, file_path = "path/to/UKB/file", min_maf = 0.01, scale = TRUE)
@@ -81,7 +81,7 @@ sim_geno_UKB <- function(n, file_path, min_maf = 0.01, scale = FALSE) {
   G <- process_ukb(file_path, n, min_maf)
 
   if (scale) {
-    G <- scale_faster(G)
+    G <- scale(G)
   }
 
   colnames(G) <- paste0("variant", 1:ncol(G))

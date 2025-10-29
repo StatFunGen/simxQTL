@@ -13,7 +13,7 @@ sim_geno_UKB(n, file_path, min_maf = 0.01, scale = FALSE)
 
 \item{min_maf}{Minimum minor allele frequency.}
 
-\item{scale}{Logical, whether to scale the data using scale_faster.}
+\item{scale}{Logical, whether to scale the data.}
 }
 \value{
 A matrix of genotypes.

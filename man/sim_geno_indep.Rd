@@ -15,7 +15,7 @@ sim_geno_indep(n, p, min_maf = 0.01, max_maf = 0.4, scale = FALSE)
 
 \item{max_maf}{Maximum minor allele frequency.}
 
-\item{scale}{Logical, whether to scale the data using scale_faster.}
+\item{scale}{Logical, whether to scale the data.}
 }
 \value{
 A matrix of genotypes.
