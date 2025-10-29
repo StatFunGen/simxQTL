@@ -45,16 +45,56 @@ navbar:
       aria-label: View source on GitHub
 
 reference:
-  - title: "All Functions"
-    desc: "All exported functions in simxQTL"
+  - title: "Genotype Simulation"
+    desc: "Functions for simulating genotype data"
+    contents:
+      - sim_geno_indep
+      - sim_geno_LD
+      - sim_geno_UKB
+
+  - title: "Effect Size and Trait Simulation"
+    desc: "Functions for simulating effect sizes and phenotypes"
+    contents:
+      - parse_num_causal_snps
+      - sim_beta
+      - sim_beta_fix_variant
+      - simulate_polygenic_trait
+      - sim_multi_traits
+
+  - title: "Summary Statistics"
+    desc: "Functions for simulating and calculating summary statistics"
+    contents:
+      - sim_sumstats
+      - calculate_sumstat
+      - get_correlation
+
+  - title: "eQTL Simulation"
+    desc: "Functions for simulating eQTL data"
+    contents:
+      - generate_eqtl_data
+
+  - title: "Trans-QTL Simulation"
+    desc: "Functions for simulating trans-QTL and gene regulatory networks"
+    contents:
+      - simulate_cis_expression
+      - simulate_trans_expression
+      - simulate_trans_mixture_celltype
+      - get_random_A
+      - gene_data
+      - gene_data_null1
+      - gene_data_null2
+      - gene_data_null3
+
+  - title: "Enrichment Analysis"
+    desc: "Functions for simulating causal enrichment"
+    contents:
+      - simulate_causal_config
+
+  - title: "Utility Functions"
+    desc: "Helper functions for calculations"
     contents:
       - compute_s2g
       - get_lower_chol
-      - parse_num_causal_snps
-      - sim_beta
-      - sim_multi_traits
-      - sim_sumstats
-      - simulate_polygenic_trait
 
 footer:
   structure:
