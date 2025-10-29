@@ -14,7 +14,7 @@
 #'   \item{beta}{A vector of effect sizes with nonzero entries for the sparse SNPs.}
 #'   \item{sentinel_index}{Index of the sentinel SNP.}
 #'   \item{other_sparse_indices}{Indices of the additional sparse SNPs.}
-#' @export
+#' @keywords internal
 simulate_sparse_effects <- function(G, h2_sparse, prop_h2_sentinel, n_other_sparse,
                                     min_sparse_effect = 0.10, sentinel_dominance = 1.5) {
   n_features <- ncol(G)
@@ -99,7 +99,7 @@ simulate_sparse_effects <- function(G, h2_sparse, prop_h2_sentinel, n_other_spar
 #'   \item{beta}{A vector of effect sizes for oligogenic effects (zeros elsewhere).}
 #'   \item{oligogenic_indices}{Indices of the oligogenic SNPs.}
 #'   \item{mixture_assignments}{A vector (indexed by SNP) of mixture component assignments.}
-#' @export
+#' @keywords internal
 simulate_oligogenic_effects <- function(G, h2_oligogenic, n_oligogenic, mixture_props,
                                         non_sparse_indices,
                                         max_oligogenic_effect = 0.12,
@@ -166,7 +166,7 @@ simulate_oligogenic_effects <- function(G, h2_oligogenic, n_oligogenic, mixture_
 #' @param h2_infinitesimal Heritability allocated to infinitesimal effects.
 #' @param infinitesimal_indices Indices of SNPs to receive infinitesimal effects.
 #' @return A vector of effect sizes (with zeros outside infinitesimal_indices).
-#' @export
+#' @keywords internal
 simulate_infinitesimal_effects <- function(G, h2_infinitesimal, infinitesimal_indices) {
   n_features <- ncol(G)
   beta <- rep(0, n_features)
@@ -193,7 +193,7 @@ simulate_infinitesimal_effects <- function(G, h2_infinitesimal, infinitesimal_in
 #' @details The function calculates power using a non-central chi-square distribution
 #'   with non-centrality parameter NCP = n * beta^2 * var(X) / residual_variance, where the
 #'   significance threshold is Bonferroni-corrected (alpha = 0.05 / p).
-#' @export
+#' @keywords internal
 is_causal_power <- function(G, beta, residual_variance, power = 0.80) {
   n <- nrow(G)
   p <- ncol(G)

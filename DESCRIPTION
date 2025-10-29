@@ -16,12 +16,17 @@ Authors@R: c(
 License: MIT + file LICENSE
 Imports:
     matrixStats,
-    Rcpp (>= 1.0.3)
+    Rcpp (>= 1.0.3),
+    susieR,
+    tibble
 Suggests:
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    BEDMatrix,
+    data.table,
+    mvtnorm
 LinkingTo: Rcpp
 NeedsCompilation: yes
 VignetteBuilder: knitr
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3

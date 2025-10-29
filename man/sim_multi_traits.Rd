@@ -10,7 +10,8 @@ sim_multi_traits(
   h2g,
   is_h2g_total = TRUE,
   max_h2g = 1,
-  residual_corr = NULL
+  residual_corr = NULL,
+  null_sigma = sqrt(0.1)
 )
 }
 \arguments{
@@ -22,7 +23,11 @@ sim_multi_traits(
 
 \item{is_h2g_total}{Logical indicating if h2g is total (TRUE) or per-SNP (FALSE).}
 
+\item{max_h2g}{Maximum heritability allowed (default 1).}
+
 \item{residual_corr}{Matrix of residual correlations (NULL for independent samples).}
+
+\item{null_sigma}{Standard deviation for null traits (default sqrt(0.1)).}
 }
 \value{
 A list containing the simulated phenotypes matrix (t * n, t = trait number, n = sample size) (`P`) and residual variance (`residual_var`).
