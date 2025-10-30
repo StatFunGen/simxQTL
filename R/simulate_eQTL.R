@@ -166,11 +166,13 @@ is_causal_power <- function(G, beta, residual_variance, power = 0.80) {
 }
 
 ###############################################################################
-#' Generate eQTL Data with Multiple Genetic Architecture Components
+#' Generate Cis-QTL Data with Multiple Genetic Architecture Components
 #'
-#' This function generates simulated gene expression data with a partitioned
+#' This function generates simulated cis-eQTL data with a partitioned
 #' genetic architecture that enforces strict effect size hierarchies:
 #' |sparse| > |oligogenic| >> |infinitesimal|
+#'
+#' Originally developed for the "susieR 2.0" manuscript, McCreight et al (2025).
 #'
 #' @param G Genotype matrix.
 #' @param h2g Total SNP heritability (proportion of variance explained by genotyped SNPs).
@@ -191,7 +193,7 @@ is_causal_power <- function(G, beta, residual_variance, power = 0.80) {
 #'   combined beta values, indices for each effect component, realized heritability estimates,
 #'   effect size ranges, hierarchy validation results, and causal indices.
 #' @export
-generate_eqtl_data <- function(G,
+generate_cis_qtl_data <- function(G,
                                h2g = 0.30,
                                prop_h2_sparse = 0.50,
                                prop_h2_oligogenic = 0.15,
