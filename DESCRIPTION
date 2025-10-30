@@ -9,10 +9,10 @@ Description: Provides a fast and memory-efficient method for
 URL: https://statfungen.github.io/simxQTL/, https://github.com/StatFunGen/simxQTL
 BugReports: https://github.com/StatFunGen/simxQTL/issues
 Authors@R: c(
-    person("Gao", "Wang", role = c("cre", "aut"), email = "wang.gao@columbia.edu"),
-    person("Alexander", "McCreight", role = "aut"),
+    person("Alexander", "McCreight", role = c("cre", "aut")),
     person("Xuewei", "Cao", role = "aut"),
-    person("Haochen", "Sun", role = "aut"))
+    person("Haochen", "Sun", role = "aut"),
+    person("Gao", "Wang", role = "aut", email = "wang.gao@columbia.edu"))
 License: MIT + file LICENSE
 Imports:
     matrixStats,
