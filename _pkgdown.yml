@@ -75,7 +75,7 @@ reference:
       - generate_cis_qtl_data
 
   - title: "Trans-QTL Simulation"
-    desc: "Functions for simulating trans-QTL and gene regulatory networks"
+    desc: "Functions for simulating trans-QTL and gene regulatory networks, originally developed for the \"transBoost\" manuscript, Cao et al (2026)"
     contents:
       - simulate_trans_expression
       - simulate_trans_mixture_celltype
