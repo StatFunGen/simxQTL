@@ -230,7 +230,8 @@ generate_eqtl_data <- function(G,
   h2_infinitesimal <- h2g * prop_h2_infinitesimal
 
   # Setup for LD constraint checking
-  max_attempts <- if (independent) 200 else 1 
+  max_attempts <- if (independent) 200 else 1
+  attempt <- 0
   ld_satisfied <- FALSE
 
   # Main data generation loop

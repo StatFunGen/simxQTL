@@ -4,36 +4,25 @@
 \alias{simulate_sparse_effects}
 \title{Simulate Sparse Effects for eQTL Data}
 \usage{
-simulate_sparse_effects(
-  G,
-  h2_sparse,
-  prop_h2_sentinel,
-  n_other_sparse,
-  min_sparse_effect = 0.1,
-  sentinel_dominance = 1.5
-)
+simulate_sparse_effects(G, h2_sparse, n_sparse, effect_sd = 0.5)
 }
 \arguments{
 \item{G}{A standardized genotype matrix.}
 
 \item{h2_sparse}{Heritability allocated to sparse effects.}
 
-\item{prop_h2_sentinel}{Proportion of h2_sparse attributed to the sentinel SNP.}
+\item{n_sparse}{Number of sparse SNPs.}
 
-\item{n_other_sparse}{Number of additional sparse SNPs.}
-
-\item{min_sparse_effect}{Minimum absolute effect size for non-sentinel sparse SNPs.}
-
-\item{sentinel_dominance}{Multiplicative factor ensuring sentinel > other sparse effects (default 1.5).}
+\item{effect_sd}{Standard deviation for drawing sparse effects (default 0.5).}
 }
 \value{
 A list containing:
   \item{beta}{A vector of effect sizes with nonzero entries for the sparse SNPs.}
-  \item{sentinel_index}{Index of the sentinel SNP.}
-  \item{other_sparse_indices}{Indices of the additional sparse SNPs.}
+  \item{sparse_indices}{Indices of the sparse SNPs.}
 }
 \description{
-This function simulates the sparse component of the genetic effects,
-including a sentinel SNP and a specified number of additional sparse SNPs.
+This function simulates the sparse component of the genetic effects using
+target-based scaling. Effects are drawn from a normal distribution and then
+scaled to match the target heritability.
 }
 \keyword{internal}
