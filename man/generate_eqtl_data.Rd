@@ -6,53 +6,50 @@
 \usage{
 generate_eqtl_data(
   G,
-  h2_total = 0.3,
-  prop_h2_sparse = 0.4,
-  prop_h2_oligogenic = 0.05,
-  prop_h2_infinitesimal = 0.55,
-  prop_h2_sentinel = 0.87,
-  n_oligogenic = 20,
+  h2g = 0.3,
+  prop_h2_sparse = 0.5,
+  prop_h2_oligogenic = 0.15,
+  prop_h2_infinitesimal = 0.35,
+  n_sparse = 2,
+  n_oligogenic = 10,
   mixture_props = c(0.75, 0.25),
-  n_other_sparse = 1,
-  min_sparse_effect = 0.1,
-  max_oligogenic_effect = 0.08,
-  mixture_sd_props = c(0.3, 0.7),
-  sentinel_dominance = 1.5,
+  sparse_sd = 0.5,
+  oligo_sds = c(0.05, 0.15),
+  inf_sd = 0.01,
   standardize = TRUE,
   independent = TRUE,
+  verbose = FALSE,
   seed = NULL
 )
 }
 \arguments{
 \item{G}{Genotype matrix.}
 
-\item{h2_total}{Total heritability.}
+\item{h2g}{Total SNP heritability (proportion of variance explained by genotyped SNPs).}
 
-\item{prop_h2_sparse}{Proportion of h2_total explained by sparse effects.}
+\item{prop_h2_sparse}{Proportion of h2g explained by sparse effects.}
 
-\item{prop_h2_oligogenic}{Proportion of h2_total explained by oligogenic effects.}
+\item{prop_h2_oligogenic}{Proportion of h2g explained by oligogenic effects.}
 
-\item{prop_h2_infinitesimal}{Proportion of h2_total explained by infinitesimal effects.}
+\item{prop_h2_infinitesimal}{Proportion of h2g explained by infinitesimal effects.}
 
-\item{prop_h2_sentinel}{Proportion of h2_sparse explained by the sentinel SNP.}
+\item{n_sparse}{Number of sparse SNPs.}
 
 \item{n_oligogenic}{Number of oligogenic SNPs to simulate.}
 
 \item{mixture_props}{Mixture proportions for oligogenic effects (must sum to 1). Default c(0.75, 0.25) means 75% smaller effects, 25% larger effects.}
 
-\item{n_other_sparse}{Number of additional sparse SNPs (besides the sentinel).}
+\item{sparse_sd}{Standard deviation for drawing sparse effects (default 0.5).}
 
-\item{min_sparse_effect}{Minimum absolute effect size for non-sentinel sparse SNPs (default 0.10).}
+\item{oligo_sds}{Standard deviations for oligogenic mixture components (default c(0.05, 0.15)).}
 
-\item{max_oligogenic_effect}{Maximum absolute effect size for oligogenic SNPs (default 0.08).}
-
-\item{mixture_sd_props}{Proportions of max_oligogenic_effect for mixture components (default c(0.3, 0.7)).}
-
-\item{sentinel_dominance}{Multiplicative factor ensuring sentinel > other sparse (default 1.5).}
+\item{inf_sd}{Standard deviation for drawing infinitesimal effects (default 0.01).}
 
 \item{standardize}{Logical; if TRUE, the genotype matrix will be standardized.}
 
-\item{independent}{Logical; if TRUE, ensures causal SNPs have |r| < 0.15 with each other (default FALSE).}
+\item{independent}{Logical; if TRUE, ensures all sparse and oligogenic SNPs have |r| < 0.15 with each other (default FALSE).}
+
+\item{verbose}{Logical; if TRUE, prints progress messages including LD constraint attempts (default FALSE).}
 
 \item{seed}{Optional seed for reproducibility.}
 }
@@ -64,5 +61,5 @@ A list containing the standardized genotype matrix, simulated phenotype,
 \description{
 This function generates simulated gene expression data with a partitioned
 genetic architecture that enforces strict effect size hierarchies:
-|sentinel| > |other sparse| > |oligogenic| >> |infinitesimal|
+|sparse| > |oligogenic| >> |infinitesimal|
 }

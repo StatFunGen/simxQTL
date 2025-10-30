@@ -4,7 +4,12 @@
 \alias{simulate_infinitesimal_effects}
 \title{Simulate Infinitesimal Effects for eQTL Data}
 \usage{
-simulate_infinitesimal_effects(G, h2_infinitesimal, infinitesimal_indices)
+simulate_infinitesimal_effects(
+  G,
+  h2_infinitesimal,
+  infinitesimal_indices,
+  effect_sd = 0.01
+)
 }
 \arguments{
 \item{G}{A standardized genotype matrix.}
@@ -12,12 +17,16 @@ simulate_infinitesimal_effects(G, h2_infinitesimal, infinitesimal_indices)
 \item{h2_infinitesimal}{Heritability allocated to infinitesimal effects.}
 
 \item{infinitesimal_indices}{Indices of SNPs to receive infinitesimal effects.}
+
+\item{effect_sd}{Standard deviation for drawing infinitesimal effects (default 0.01).}
 }
 \value{
 A vector of effect sizes (with zeros outside infinitesimal_indices).
 }
 \description{
-This function simulates the infinitesimal (polygenic) background effects for
-a set of SNPs.
+This function simulates the infinitesimal (polygenic) background effects using
+target-based scaling. Effects are drawn from a normal distribution and scaled
+to match the target heritability. The small effect_sd ensures infinitesimal
+effects remain tiny.
 }
 \keyword{internal}

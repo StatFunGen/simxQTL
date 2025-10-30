@@ -10,8 +10,7 @@ simulate_oligogenic_effects(
   n_oligogenic,
   mixture_props,
   non_sparse_indices,
-  max_oligogenic_effect = 0.12,
-  mixture_sd_props = c(0.3, 0.7)
+  effect_sds = c(0.05, 0.15)
 )
 }
 \arguments{
@@ -25,9 +24,7 @@ simulate_oligogenic_effects(
 
 \item{non_sparse_indices}{SNP indices not used in the sparse component.}
 
-\item{max_oligogenic_effect}{Maximum absolute effect size for oligogenic SNPs.}
-
-\item{mixture_sd_props}{Proportions of max_oligogenic_effect for the two mixture components (default c(0.3, 0.7)).}
+\item{effect_sds}{Standard deviations for the two mixture components (default c(0.05, 0.15)).}
 }
 \value{
 A list containing:
@@ -36,9 +33,8 @@ A list containing:
   \item{mixture_assignments}{A vector (indexed by SNP) of mixture component assignments.}
 }
 \description{
-This function simulates oligogenic effects using a two-component mixture
-model with a constraint that all oligogenic effects must be smaller than
-a specified maximum threshold. The mixture standard deviations are automatically
-derived from max_oligogenic_effect to ensure effects span a reasonable range.
+This function simulates oligogenic effects using target-based scaling with
+a two-component mixture model. Effects are drawn from a mixture distribution
+and then scaled to match the target heritability.
 }
 \keyword{internal}
