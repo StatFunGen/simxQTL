@@ -50,7 +50,7 @@ reference:
     contents:
       - sim_geno_indep
       - sim_geno_LD
-      - sim_geno_UKB
+      - sim_geno_real
 
   - title: "Effect Size and Trait Simulation"
     desc: "Functions for simulating effect sizes and phenotypes"
