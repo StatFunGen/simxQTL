@@ -50,7 +50,7 @@ reference:
     contents:
       - sim_geno_indep
       - sim_geno_LD
-      - sim_geno_UKB
+      - sim_geno_real
 
   - title: "Effect Size and Trait Simulation"
     desc: "Functions for simulating effect sizes and phenotypes"
@@ -60,6 +60,7 @@ reference:
       - sim_beta_fix_variant
       - simulate_polygenic_trait
       - sim_multi_traits
+      - sim_single_trait_simple
 
   - title: "Summary Statistics"
     desc: "Functions for simulating and calculating summary statistics"
@@ -68,15 +69,14 @@ reference:
       - calculate_sumstat
       - get_correlation
 
-  - title: "eQTL Simulation"
-    desc: "Functions for simulating eQTL data"
+  - title: "Cis-QTL Simulation"
+    desc: "Functions for simulating cis-eQTL data, originally developed for the \"susieR 2.0\" manuscript, McCreight et al (2025)"
     contents:
-      - generate_eqtl_data
+      - generate_cis_qtl_data
 
   - title: "Trans-QTL Simulation"
-    desc: "Functions for simulating trans-QTL and gene regulatory networks"
+    desc: "Functions for simulating trans-QTL and gene regulatory networks, originally developed for the \"transBoost\" manuscript, Cao et al (2026)"
     contents:
-      - simulate_cis_expression
       - simulate_trans_expression
       - simulate_trans_mixture_celltype
       - get_random_A

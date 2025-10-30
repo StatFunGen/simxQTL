@@ -1,0 +1,24 @@
+bibentry(
+  bibtype = "Article",
+  title = paste("SuSiE 2.0: improved methods and implementations for",
+                "genetic fine-mapping and phenotype prediction"),
+  author = c(
+    person("Alexander", "McCreight"),
+    person("Yanghyeon", "Cho"),
+    person("Daniel", "Nachun"),
+    person("Ruixi", "Li"),
+    person("Hao-Yu", "Gan"),
+    person("Matthew", "Stephens"),
+    person("Peter", "Carbonetto"),
+    person("William", "R.P. Denault"),
+    person("Gao", "Wang")
+  ),
+  journal = "Submitting to Genome Biology",
+  year = "2025",
+  textVersion =
+    paste("Alexander McCreight, Yanghyeon Cho, Daniel Nachun, Ruixi Li,",
+          "Hao-Yu Gan, Matthew Stephens, Peter Carbonetto,",
+          "William R.P. Denault and Gao Wang (2025). SuSiE 2.0: improved",
+          "methods and implementations for genetic fine-mapping and",
+          "phenotype prediction. Submitting to Genome Biology")
+)

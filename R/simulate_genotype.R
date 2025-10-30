@@ -63,19 +63,19 @@ sim_geno_LD <- function(n, LD, min_maf = 0.01, max_maf = 0.4, lambda = 1e-3, is.
   return(G)
 }
 
-#' Simulate Genotypes Based on UK Biobank
+#' Simulate Genotypes Based on Real Data
 #'
 #' @param n Sample size.
-#' @param file_path Path to the UK Biobank file.
+#' @param file_path Path to the genotype file.
 #' @param min_maf Minimum minor allele frequency.
 #' @param scale Logical, whether to scale the data.
 #' @return A matrix of genotypes.
 #' @examples
-#' sim_geno_UKB(n = 100, file_path = "path/to/UKB/file", min_maf = 0.01, scale = TRUE)
+#' sim_geno_real(n = 100, file_path = "path/to/real/file", min_maf = 0.01, scale = TRUE)
 #' @export
-sim_geno_UKB <- function(n, file_path, min_maf = 0.01, scale = FALSE) {
+sim_geno_real <- function(n, file_path, min_maf = 0.01, scale = FALSE) {
   if (missing(n)) stop("Please provide the sample size")
-  if (is.null(file_path)) stop("Please provide the path of UK Biobank!")
+  if (is.null(file_path)) stop("Please provide the path to genotype data!")
   if (!grepl("\\.bed$", file_path)) stop("Please provide plink bfiles!")
 
   G <- process_ukb(file_path, n, min_maf)
