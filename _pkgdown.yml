@@ -60,6 +60,7 @@ reference:
       - sim_beta_fix_variant
       - simulate_polygenic_trait
       - sim_multi_traits
+      - sim_single_trait_simple
 
   - title: "Summary Statistics"
     desc: "Functions for simulating and calculating summary statistics"
@@ -76,7 +77,6 @@ reference:
   - title: "Trans-QTL Simulation"
     desc: "Functions for simulating trans-QTL and gene regulatory networks"
     contents:
-      - simulate_cis_expression
       - simulate_trans_expression
       - simulate_trans_mixture_celltype
       - get_random_A
