@@ -19,7 +19,9 @@ generate_cis_qtl_data(
   inf_sd = 0.01,
   standardize = TRUE,
   independent = TRUE,
-  ld_threshold = 0.15,
+  ld_threshold = 0.1,
+  ld_step = 0.1,
+  ld_max = 0.5,
   max_attempts = 200,
   seed = NULL
 )
@@ -53,9 +55,13 @@ generate_cis_qtl_data(
 
 \item{independent}{Logical; if TRUE, ensures all sparse and oligogenic SNPs have |r| < ld_threshold with each other (default TRUE).}
 
-\item{ld_threshold}{Numeric; maximum allowed absolute correlation between causal variants when independent = TRUE (default 0.15).}
+\item{ld_threshold}{Numeric; starting maximum allowed absolute correlation between causal variants when independent = TRUE (default 0.10). If constraints cannot be satisfied, the threshold is progressively increased by ld_step.}
 
-\item{max_attempts}{Integer; maximum number of attempts to find SNPs satisfying LD constraints (default 200).}
+\item{ld_step}{Numeric; amount to increase ld_threshold after max_attempts failures (default 0.10).}
+
+\item{ld_max}{Numeric; maximum ld_threshold to try before giving up (default 0.50).}
+
+\item{max_attempts}{Integer; maximum number of attempts per LD threshold level to find SNPs satisfying LD constraints (default 200).}
 
 \item{seed}{Optional seed for reproducibility.}
 }
